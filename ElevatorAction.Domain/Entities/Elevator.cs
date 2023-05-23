@@ -13,7 +13,17 @@ namespace ElevatorAction.Domain.Entities
             Id = Guid.NewGuid();
         }
 
-        public int CurrentFloor { get => currentFloor?.Number ?? 0; set => floors.FirstOrDefault(x => x.Number == value); }
+        public int CurrentFloor {
+            get
+            {
+                return currentFloor?.Number ?? 0;
+            } 
+            set
+            {
+                currentFloor = floors.FirstOrDefault(x => x.Number == value);
+            } 
+        
+        }
         //public int CurrentFloor { get; set; }
         public int CurrentPersons { get; set; }
 

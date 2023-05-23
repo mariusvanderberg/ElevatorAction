@@ -1,6 +1,8 @@
 ﻿using ElevatorAction.Domain.Entities;
 using ElevatorAction.Domain.Enums;
 using ElevatorAction.Domain.Interfaces;
+using System.Drawing;
+using System.Reflection.Metadata.Ecma335;
 
 namespace ElevatorAction.Application
 {
@@ -10,18 +12,78 @@ namespace ElevatorAction.Application
     /// </summary>
     public class ElevatorControlService : IElevatorControlService
     {
-        private readonly List<IElevatorService> _elevatorServices;
-        private readonly List<Floor> _floors;
-        private readonly Queue<Request> _requestQueue;
+        private List<IElevatorService> _elevatorServices = new();
+        private List<Floor> _floors = new();
+        private Queue<Request> _requestQueue = new();
+        private bool initialised = false;
+        private readonly IInputManager _inputManager;
 
-        public ElevatorControlService(List<IElevatorService> elevatorServices, List<Floor> floors)
+        public event EventHandler<RequestEventArgs>? RequestReceived;
+        public event EventHandler<RequestEventArgs>? ElevatorArrived;
+
+        public ElevatorControlService(IInputManager inputManager)
         {
+            _inputManager = inputManager;
+        }
+
+        public void Init(List<IElevatorService> elevatorServices, List<Floor> floors)
+        {
+            if (initialised)
+            {
+                Console.WriteLine("Init can only happen once");
+                return;
+            }
             _elevatorServices = elevatorServices;
             _floors = floors;
             _requestQueue = new Queue<Request>();
+            initialised = true;
         }
 
-        public void AddRequest(int floor, int people, ElevatorDirection direction)
+        protected virtual async Task OnRequestReceivedAsync(RequestEventArgs e)
+        {
+            if (RequestReceived != null)
+            {
+                Delegate[] eventHandlers = RequestReceived.GetInvocationList();
+                List<Task> handlerTasks = new(eventHandlers.Length);
+
+                foreach (EventHandler<RequestEventArgs> handler in eventHandlers)
+                {
+                    Task task = Task.Run(() => handler.Invoke(this, e));
+                    handlerTasks.Add(task);
+                }
+
+                await Task.WhenAll(handlerTasks);
+            }
+        }
+
+        protected virtual async Task<RequestEventArgs> OnElevatorArrivedAsync(RequestEventArgs e)
+        {
+            if (ElevatorArrived != null)
+            {
+                Delegate[] eventHandlers = ElevatorArrived.GetInvocationList();
+                List<Task> handlerTasks = new(eventHandlers.Length);
+
+                foreach (EventHandler<RequestEventArgs> handler in eventHandlers)
+                {
+                    Task task = Task.Run(() => handler.Invoke(this, e));
+                    handlerTasks.Add(task);
+                }
+
+                await Task.WhenAll(handlerTasks);
+            }
+
+            return e;
+        }
+
+        /// <summary>
+        /// Enqueue takes care of adding the correct queue in terms of
+        /// capacity to the back, ensuring that requests are valid and tended to
+        /// </summary>
+        /// <param name="floor"></param>
+        /// <param name="people"></param>
+        /// <param name="direction"></param>
+        /// <returns>bool indicating success</returns>
+        public async Task<bool> EnqueueRequestAsync(int floor, int people, ElevatorDirection direction)
         {
             int maximumCapacity = _elevatorServices.Max(x => x.GetCapacity());
             if (people > maximumCapacity)
@@ -32,6 +94,7 @@ namespace ElevatorAction.Application
                 for (int i = 0; i < elevatorNeedCount; i++)
                 {
                     _requestQueue.Enqueue(new Request(floor, maximumCapacity, direction));
+                    //await OnRequestReceivedAsync(new RequestEventArgs(floor, direction));
                     people -= maximumCapacity;
                 }
 
@@ -40,30 +103,44 @@ namespace ElevatorAction.Application
                 {
                     // Add the remainder
                     _requestQueue.Enqueue(new Request(floor, people, direction));
+                    //await OnRequestReceivedAsync(new RequestEventArgs(floor, direction));
                 }
+
+                return true;
             } else
             {
                 _requestQueue.Enqueue(new Request(floor, people, direction));
+                await OnRequestReceivedAsync(new RequestEventArgs(floor, direction));
+                //await ProcessElevatorRequestsAsync(); // This will take the front of the queue until an elevator is available
+                return true;
             }
         }
 
-        public void ProcessElevatorRequests()
+        /// <inheritdoc/>
+        public async Task<bool> ProcessElevatorRequestsAsync()
         {
-            while (_requestQueue.Count > 0)
+            while (_requestQueue.Count > 0) // Hopefully loops through the queue until everyone is happy
             {
                 Request request = _requestQueue.Dequeue();
 
-                IElevatorService elevatorService = GetAvailableElevator(request);
+                IElevatorService? elevatorService = GetAvailableElevator(request);
 
                 if (elevatorService != null)
                 {
-                    elevatorService.ProcessRequest(request);
+                    await MoveElevatorAsync(elevatorService, request);
+                    //return true;
                 }
                 else
                 {
-                    Console.WriteLine("No available elevators to handle the request.");
+                    //Console.WriteLine("No available elevators to handle the request. Queueing again");
+                    await EnqueueRequestAsync(request.Floor, request.People, request.Direction);
+                    //await Task.Delay(5000);
+                    //return await ProcessElevatorRequestsAsync(); // recursive to ensure people are tended to
                 }
             }
+
+            // Default is true, failure results in exception
+            return true;
         }
 
         public ElevatorDirection GetAvailableDirections(int floor)
@@ -119,34 +196,77 @@ namespace ElevatorAction.Application
             return elevator;
         }
 
-        public void RequestElevator(Request request)
+        private async Task MoveElevatorAsync(IElevatorService elevatorService, Request request)
         {
-            var elevator = GetAvailableElevator(request);
+            // This handles the elevator itself, moving and then opening doors
+            await elevatorService.ProcessRequestAsync(request);
 
-            if (elevator is not null)
+            // We are now on the floor, people are loaded into the elevator, we need to ask where to
+            //var evt = await OnElevatorArrivedAsync(new RequestEventArgs(request.Floor, request.Direction));
+
+            int destinationFloor = await Task.Run(() => _inputManager.NumberInput($"Elevator ready and loaded. Which floor would you like to go to?"));
+
+            //int floorz = _inputManager.NumberInput("Which floor?");
+
+            // TODO: Get actual floor from user
+            //int destinationFloor = evt.Floor;
+
+            // Create a cancellation token source
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            Task moveTask = elevatorService.MoveToFloor(destinationFloor, request.Direction, cts.Token);
+
+            // Now let's move...
+            try
             {
-                elevator.MoveToFloor(request.Floor);
+                await moveTask;
+            }
+            catch (OperationCanceledException)
+            {
+                Console.WriteLine("Move operation canceled.");
+            }
+        }
+
+        public async Task RequestElevatorAsync(Request request)
+        {
+            var elevatorService = GetAvailableElevator(request);
+
+            if (elevatorService is not null)
+            {
+                await MoveElevatorAsync(elevatorService, request);
+
             } else
             {
-                // If there is no elevators, then we will have to queue one
-                AddRequest(request.Floor, request.People, request.Direction);
+                // If there are no elevators, then we will have to queue one
+                if (await EnqueueRequestAsync(request.Floor, request.People, request.Direction))
+                {
+                    await Task.Delay(2000);
+                    await ProcessElevatorRequestsAsync(); // Take it off the queue
+                }
             }
         }
 
-        /// <summary>
-        /// Checks if the elevator is still on track to stop at the floor requested
-        /// </summary>
-        /// <param name="elevatorService"><see cref="IElevatorService"/></param>
-        /// <param name="direction"><see cref="Domain.Enums.ElevatorDirection"/>: Direction requested bu the user (up or down) form a floor</param>
-        /// <param name="floor">Floor which the user is currently on</param>
-        /// <returns>bool indicating if the elevator is still going to pass the people</returns>
-        private bool GoingPastFloor(ref ElevatorService elevatorService, Domain.Enums.ElevatorDirection direction, int floor)
+        ///// <summary>
+        ///// Checks if the elevator is still on track to stop at the floor requested
+        ///// </summary>
+        ///// <param name="elevatorService"><see cref="IElevatorService"/></param>
+        ///// <param name="direction"><see cref="Domain.Enums.ElevatorDirection"/>: Direction requested bu the user (up or down) form a floor</param>
+        ///// <param name="floor">Floor which the user is currently on</param>
+        ///// <returns>bool indicating if the elevator is still going to pass the people</returns>
+        //private bool GoingPastFloor(ref ElevatorService elevatorService, Domain.Enums.ElevatorDirection direction, int floor)
+        //{
+        //    if (direction == Domain.Enums.ElevatorDirection.Up)
+        //    {
+        //        return elevatorService.GetCurrentFloor() < floor;
+        //    }
+        //    return elevatorService.GetCurrentFloor() > floor;
+        //}
+
+        public ElevatorDirection GetAvailableFloors(int floor)
         {
-            if (direction == Domain.Enums.ElevatorDirection.Up)
-            {
-                return elevatorService.GetCurrentFloor() < floor;
-            }
-            return elevatorService.GetCurrentFloor() > floor;
+            throw new NotImplementedException();
         }
     }
+
+    public delegate Task AsyncEventHandler<TEventArgs>(object? sender, TEventArgs e) where TEventArgs : EventArgs;
 }

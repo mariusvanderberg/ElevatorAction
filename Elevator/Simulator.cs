@@ -13,16 +13,19 @@ namespace ElevatorAction.ConsoleUI
     internal class Simulator : ISimulator
     {
         private readonly IInputManager _inputManager;
+        private readonly IElevatorControlService _controller;
         private readonly IOutputManager _outputManager;
         List<Button> buttons = new();
         List<Elevator> elevators = new(); // Used for storing elevators
         List<Floor> floors = new(); // Building block floor configuration
-         // Buttons (default and extended) per elevator and floor
+                                    // Buttons (default and extended) per elevator and floor
+        bool quickStart = false;
 
-        public Simulator(IInputManager inputManager, IOutputManager outputManager)
+        public Simulator(IInputManager inputManager, IOutputManager outputManager, IElevatorControlService controller)
         {
             _inputManager = inputManager ?? throw new ArgumentNullException(nameof(inputManager));
             _outputManager = outputManager ?? throw new ArgumentNullException(nameof(outputManager));
+            _controller = controller;
         }
 
         void TempSetup()
@@ -44,7 +47,7 @@ namespace ElevatorAction.ConsoleUI
         /// <summary>
         /// This will simulate the elevator action
         /// </summary>
-        public void Run()
+        public async Task Run()
         {
             List<IElevatorService> services = new List<IElevatorService>();
             // Start the application
@@ -54,40 +57,67 @@ namespace ElevatorAction.ConsoleUI
             }
 
             // Instantiate main elevator controller service
-            IElevatorControlService controller = new ElevatorControlService(services, floors);
+            //IElevatorControlService controller = new ElevatorControlService(services, floors);
+
+            //_controller = new ElevatorControlService();
+
+            _controller.Init(services, floors);
+
+            _controller.RequestReceived += ControlService_RequestReceived; // Everytime a request is received
+
+            // Event for when an elevator has arrived on floor and needs user input
+            _controller.ElevatorArrived += async (s, e) =>
+            {
+                await ControlService_ElevatorArrivedAsync(s, e);
+            }; // Everytime an elevator arrived after request
 
             _outputManager.Clear();
             Console.WriteLine("Welcome to Elevator action! Pres ctrl + c to close the application.");
 
-            SimulatePerson(controller);
+            await SimulatePerson();
 
             //_outputManager.Clear();
+        }
+
+        private static void ControlService_RequestReceived(object? sender, RequestEventArgs e)
+        {
+            Console.WriteLine($"New elevator request received for floor {e.Floor}, direction {e.Direction}");
+        }
+
+        private async Task<RequestEventArgs> ControlService_ElevatorArrivedAsync(object? sender, RequestEventArgs e)
+        {
+            Console.Clear();
+            var floor = await Task.Run(() => e.Floor = _inputManager.NumberInput($"Elevator at floor {e.Floor} has arived. Which floor would you like to go to?"));
+
+            return e;
+
+            //Console.WriteLine($"New elevator request received for floor {e.Floor}, direction {e.Direction}");
         }
 
         /// <summary>
         /// This simulates a person at a controller needing assistance
         /// </summary>
-        public void SimulatePerson(IElevatorControlService controller)
+        public async Task SimulatePerson()
         {
             while (true)
             {
                 // Print out floor config
                 Console.WriteLine($"You have {floors.Count} floors from {floors.MinBy(x => x.Number)?.Number} to {floors.MaxBy(x => x.Number)?.Number}");
 
-                int currentFloor = _inputManager.NumberInput("To request an elevator, please enter your curent floor number: ");
+                int currentFloor = quickStart ? 2 : _inputManager.NumberInput("To request an elevator, please enter your curent floor number: ");
 
-                int people = _inputManager.NumberInput("Thank you. How many people requires the elevator?");
+                int people = quickStart ? 7 : _inputManager.NumberInput("Thank you. How many people requires the elevator?");
 
                 // Just by this information, we should be able to tell which directions are available
-                var directions = controller.GetAvailableDirections(currentFloor);
+                var directions = _controller.GetAvailableDirections(currentFloor);
 
                 // Can go up or down, so choose
                 if (directions.HasFlag(ElevatorDirection.Up | ElevatorDirection.Down))
                 {
-                    directions = _inputManager.DirectionInput(Constants.Input.Direction);
+                    directions = quickStart ? ElevatorDirection.Up : _inputManager.DirectionInput(Constants.Input.Direction);
                 }
 
-                controller.RequestElevator(new Request(currentFloor, people, directions)); 
+                await _controller.RequestElevatorAsync(new Request(currentFloor, people, directions)); 
             }
         }
 
@@ -97,18 +127,18 @@ namespace ElevatorAction.ConsoleUI
         /// <remarks>Pre-validation required on direction</remarks>
         /// <param name="controller"><see cref="IElevatorControlService"/></param>
         /// <param name="request"><see cref="Request"/></param>
-        public void SimulatePerson(IElevatorControlService controller, Request request)
+        public void SimulatePerson(Request request)
         {
             while (true)
             {
                 // Print out floor config
                 Console.WriteLine($"You have {floors.Count} floors from {floors.MinBy(x => x.Number)?.Number} to {floors.MaxBy(x => x.Number)?.Number}");
 
-                controller.RequestElevator(request);
+                _controller.RequestElevatorAsync(request);
             }
         }
 
-        public void Start()
+        public async Task Start()
         {
             Console.OutputEncoding = Encoding.UTF8; // make sure we can print out UTF8 characters
             Console.WriteLine(Constants.Messages.Welcome);
@@ -185,7 +215,7 @@ namespace ElevatorAction.ConsoleUI
                     elevators.Add(new Elevator());
                 }
 
-                Run();
+                await Run();
             }
         }
 

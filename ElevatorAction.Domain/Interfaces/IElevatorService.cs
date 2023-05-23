@@ -12,7 +12,8 @@ namespace ElevatorAction.Domain.Interfaces
         /// Process an elevator request
         /// </summary>
         /// <param name="request"><see cref="Request"/></param>
-        public void ProcessRequest(Request request);
+        /// <returns>bool indicating success</returns>
+        Task<bool> ProcessRequestAsync(Request request);
 
         /// <summary>
         /// Informs whether the elevator is full or not
@@ -63,10 +64,13 @@ namespace ElevatorAction.Domain.Interfaces
         /// Stops the elevator immediately
         /// </summary>
         void MakeEmergencyStop();
+
         /// <summary>
         /// Move elevator to specific floor
         /// </summary>
         /// <param name="floorNumber">Floor to move to</param>
-        void MoveToFloor(int floorNumber);
+        /// <param name="direction"><see cref="ElevatorDirection"/>: Direction of the elevator</param>
+        /// <param name="stoppingToken"><see cref="CancellationToken"/>: Used for emergency stops</param>
+        Task MoveToFloor(int floorNumber, ElevatorDirection direction, CancellationToken stoppingToken);
     }
 }

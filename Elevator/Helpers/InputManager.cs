@@ -1,5 +1,6 @@
 ﻿using ElevatorAction.ConsoleUI.Interfaces;
 using ElevatorAction.Domain.Enums;
+using ElevatorAction.Domain.Interfaces;
 
 namespace ElevatorAction.ConsoleUI.Helpers
 {
@@ -23,7 +24,10 @@ namespace ElevatorAction.ConsoleUI.Helpers
         public int NumberInput(string message)
         {
             int val;
-            var input = ReadLine.Read(message);
+            Console.Write(message);
+            //var input = ReadLine.Read(message);
+
+            string? input = Console.ReadLine();
 
             while (!int.TryParse(input, out val))
             {

@@ -1,6 +1,6 @@
 ﻿using ElevatorAction.Domain.Enums;
 
-namespace ElevatorAction.ConsoleUI.Interfaces
+namespace ElevatorAction.Domain.Interfaces
 {
     public interface IInputManager
     {
