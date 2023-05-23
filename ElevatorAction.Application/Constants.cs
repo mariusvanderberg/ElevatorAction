@@ -18,7 +18,7 @@ public static class Constants
 
     public static class Messages
     {
-        public const string CurrentFloorFomat = "Current floor: {0}";
+        public const string ElevatorMovingFormat = "Elevator moving with {0} people. Current floor: {1}";
     }
     public static class Operation
     {
@@ -31,5 +31,6 @@ public static class Constants
         public const string EmergencyStop = "Emergency stop requested. Stopping elevator.";
         public const string Error = "Please provide a number";
         public const string NoElevators = "We currently have no elevators that take {0} people. We will send more elevators, please wait.";
+        public const string Movement = "Elevator going {0}";
     }
 }

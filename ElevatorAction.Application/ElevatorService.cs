@@ -160,6 +160,8 @@ namespace ElevatorAction.Application
             _elevator.ElevatorState = ElevatorState.Moving;
             _elevator.Direction = direction;
 
+            Console.WriteLine(string.Format(Constants.Operation.Movement, direction.ToString().ToLower()));
+
             // Simulating elevator movement
             while (_elevator.CurrentFloor != floorNumber)
             {
@@ -182,7 +184,7 @@ namespace ElevatorAction.Application
                 await Task.Delay(TimeSpan.FromMilliseconds(500), stoppingToken);
 
                 // Print current floor
-                Console.Write(string.Format(Constants.Messages.CurrentFloorFomat, _elevator.CurrentFloor));
+                Console.Write(string.Format(Constants.Messages.ElevatorMovingFormat, _elevator.CurrentPersons, _elevator.CurrentFloor));
                 Console.SetCursorPosition(0, Console.CursorTop);
             }
             Console.WriteLine();
