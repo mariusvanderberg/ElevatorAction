@@ -1,9 +1,8 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using ElevatorAction.Domain.Interfaces;
+﻿using ElevatorAction.Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+
+namespace ElevatorAction.Application;
 
 public class ElevatorBackgroundService : BackgroundService
 {
@@ -33,7 +32,7 @@ public class ElevatorBackgroundService : BackgroundService
             // Add any additional background tasks or logic
 
             // Delay for a certain interval before the next iteration
-            // 10 seconds is a long delay, but seems apropraite to handle all requests
+            // 20 seconds is a long delay, but seems apropraite to handle all requests
             // since we are very limited with a console. This can be reduced significantly
             // if an api is used.
             await Task.Delay(TimeSpan.FromSeconds(pollingInSeconds), stoppingToken);

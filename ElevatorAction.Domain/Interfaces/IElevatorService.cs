@@ -65,7 +65,7 @@ namespace ElevatorAction.Domain.Interfaces
         /// <param name="floorNumber">Floor to move to</param>
         /// <param name="direction"><see cref="ElevatorDirection"/>: Direction of the elevator</param>
         /// <param name="stoppingToken"><see cref="CancellationToken"/>: Used for emergency stops</param>
-        Task<bool> MoveToFloor(int floorNumber, ElevatorDirection direction, CancellationToken stoppingToken);
+        Task<bool> MoveToFloorAsync(int floorNumber, ElevatorDirection direction, CancellationToken stoppingToken);
 
         /// <summary>
         /// Process an elevator request

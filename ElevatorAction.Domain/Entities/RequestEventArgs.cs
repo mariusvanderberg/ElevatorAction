@@ -2,6 +2,9 @@
 
 namespace ElevatorAction.Domain.Entities
 {
+    /// <summary>
+    /// This class is used for transport between messages
+    /// </summary>
     public class RequestEventArgs : EventArgs
     {
         public int Floor { get; set; }

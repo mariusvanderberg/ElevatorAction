@@ -1,6 +1,4 @@
-﻿using System.Drawing;
-
-namespace ElevatorAction.Domain.Entities
+﻿namespace ElevatorAction.Domain.Entities
 {
     public class Floor : Entity
     {

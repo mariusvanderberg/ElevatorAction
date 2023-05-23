@@ -25,7 +25,6 @@ namespace ElevatorAction.ConsoleUI.Helpers
         {
             int val;
             Console.Write(message);
-            //var input = ReadLine.Read(message);
 
             string? input = Console.ReadLine();
 
@@ -40,20 +39,17 @@ namespace ElevatorAction.ConsoleUI.Helpers
         /// <inheritdoc/>
         public bool YesNoInput(string message, bool appendOptions = true)
         {
-            string[] options = new string[2] { "Y", "N" };
-
-            // TODO: Add to constants as format
             if (appendOptions)
-                message = $"{message} Enter {options[0]} for yes and {options[1]} for no.";
+                message = string.Format(Constants.Messages.YesNoAppend, message, Constants.Input.YesNoOptions[0], Constants.Input.YesNoOptions[1]);
 
-            var input = ReadLine.Read(message, options[0]);
+            var input = ReadLine.Read(message, Constants.Input.YesNoOptions[0]);
 
-            while (!options.Contains(input))
+            while (!Constants.Input.YesNoOptions.Contains(input))
             {
-                input = ReadLine.Read(message, options[0]);
+                input = ReadLine.Read(message, Constants.Input.YesNoOptions[0]);
             }
 
-            return input == options[0];
+            return input == Constants.Input.YesNoOptions[0];
         }
     }
 }
