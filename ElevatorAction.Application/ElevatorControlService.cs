@@ -198,21 +198,16 @@ namespace ElevatorAction.Application
 
         private async Task MoveElevatorAsync(IElevatorService elevatorService, Request request)
         {
-            // This handles the elevator itself, moving and then opening doors
-            await elevatorService.ProcessRequestAsync(request);
-
-            // We are now on the floor, people are loaded into the elevator, we need to ask where to
-            //var evt = await OnElevatorArrivedAsync(new RequestEventArgs(request.Floor, request.Direction));
-
-            int destinationFloor = await Task.Run(() => _inputManager.NumberInput($"Elevator ready and loaded. Which floor would you like to go to?"));
-
-            //int floorz = _inputManager.NumberInput("Which floor?");
-
-            // TODO: Get actual floor from user
-            //int destinationFloor = evt.Floor;
-
             // Create a cancellation token source
             CancellationTokenSource cts = new CancellationTokenSource();
+
+            // This handles the elevator itself, moving and then opening doors
+            await elevatorService.ProcessRequestAsync(request, cts.Token);
+
+            // We are now on the floor, people are loaded into the elevator, we need to ask where to
+            var evt = await OnElevatorArrivedAsync(new RequestEventArgs(request.Floor, request.Direction));
+
+            int destinationFloor = await Task.Run(() => _inputManager.NumberInput($"Elevator ready and loaded. Which floor would you like to go to?"));
 
             Task moveTask = elevatorService.MoveToFloor(destinationFloor, request.Direction, cts.Token);
 

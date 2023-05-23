@@ -2,26 +2,33 @@
 using System.Threading;
 using System.Threading.Tasks;
 using ElevatorAction.Domain.Interfaces;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
 public class ElevatorBackgroundService : BackgroundService
 {
     private readonly IElevatorControlService _elevatorControlService;
+    private readonly IConfiguration _configuration;
 
-    public ElevatorBackgroundService(IElevatorControlService elevatorControlService)
+    public ElevatorBackgroundService(IElevatorControlService elevatorControlService, IConfiguration configuration)
     {
         _elevatorControlService = elevatorControlService;
+        _configuration = configuration;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        if (!int.TryParse(_configuration["BackgroundQueueProcessor:PollingInSeconds"], out var pollingInSeconds))
+        {
+            pollingInSeconds = 20;
+        }
         while (!stoppingToken.IsCancellationRequested)
         {
             // Perform background tasks here
             // Example: Check for elevator requests and process them
 
             // Call the elevator control service method to process requests
-            //await _elevatorControlService.ProcessElevatorRequestsAsync();
+            await _elevatorControlService.ProcessElevatorRequestsAsync();
 
             // Add any additional background tasks or logic
 
@@ -29,7 +36,7 @@ public class ElevatorBackgroundService : BackgroundService
             // 10 seconds is a long delay, but seems apropraite to handle all requests
             // since we are very limited with a console. This can be reduced significantly
             // if an api is used.
-            await Task.Delay(TimeSpan.FromSeconds(20), stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(pollingInSeconds), stoppingToken);
         }
     }
 }

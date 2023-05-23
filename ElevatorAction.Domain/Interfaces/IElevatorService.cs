@@ -9,13 +9,6 @@ namespace ElevatorAction.Domain.Interfaces
     public interface IElevatorService
     {
         /// <summary>
-        /// Process an elevator request
-        /// </summary>
-        /// <param name="request"><see cref="Request"/></param>
-        /// <returns>bool indicating success</returns>
-        Task<bool> ProcessRequestAsync(Request request);
-
-        /// <summary>
         /// Informs whether the elevator is full or not
         /// </summary>
         /// <returns>bool indicating if the elevator is full or not</returns>
@@ -26,6 +19,7 @@ namespace ElevatorAction.Domain.Interfaces
         /// </summary>
         /// <returns>Elevator capacity</returns>
         int GetCapacity();
+
         /// <summary>
         /// Gets the floor that an elevator is on
         /// </summary>
@@ -71,6 +65,14 @@ namespace ElevatorAction.Domain.Interfaces
         /// <param name="floorNumber">Floor to move to</param>
         /// <param name="direction"><see cref="ElevatorDirection"/>: Direction of the elevator</param>
         /// <param name="stoppingToken"><see cref="CancellationToken"/>: Used for emergency stops</param>
-        Task MoveToFloor(int floorNumber, ElevatorDirection direction, CancellationToken stoppingToken);
+        Task<bool> MoveToFloor(int floorNumber, ElevatorDirection direction, CancellationToken stoppingToken);
+
+        /// <summary>
+        /// Process an elevator request
+        /// </summary>
+        /// <param name="request"><see cref="Request"/></param>
+        /// <param name="stoppingToken"><see cref="CancellationToken"/>: Used for emergency stops</param>
+        /// <returns>bool indicating success</returns>
+        Task<bool> ProcessRequestAsync(Request request, CancellationToken stoppingToken);
     }
 }

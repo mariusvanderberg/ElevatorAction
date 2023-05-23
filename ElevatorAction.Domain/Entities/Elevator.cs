@@ -4,13 +4,14 @@ namespace ElevatorAction.Domain.Entities
 {
     public class Elevator : Entity
     {
-        private const int MAXCAPACITY = 10;
+        private const int MAXCAPACITY = 10; // default maximum capacity
         private Floor? currentFloor = new();
         private List<Floor> floors = new();
 
-        public Elevator()
+        public Elevator(int weightLimit = MAXCAPACITY)
         {
             Id = Guid.NewGuid();
+            MaxPersons = weightLimit;
         }
 
         public int CurrentFloor {
@@ -24,32 +25,13 @@ namespace ElevatorAction.Domain.Entities
             } 
         
         }
-        //public int CurrentFloor { get; set; }
         public int CurrentPersons { get; set; }
 
-        public ElevatorState ElevatorState { get; set; } = ElevatorState.Stationary;
         public ElevatorDirection Direction { get; set; }
+        public ElevatorState ElevatorState { get; set; } = ElevatorState.Stationary;
         public List<Floor> Floors { get => floors; set => floors = value; }
-        public int MaxPersons { get => MAXCAPACITY; }
-        //public void AddFloor(Floor floor)
-        //{
-        //    if (!floors.Contains(floor))
-        //    {
-        //        floors.Add(floor);
-        //    }
-        //}
-
-        //public void SetCurrentFloor(Floor floor)
-        //{
-        //    if (floors.Any(x => x.Id == floor.Id))
-        //    {
-        //        currentFloor = floors.FirstOrDefault(x => x.Id == floor.Id);
-        //    } else
-        //    {
-        //        // Log a warning
-        //    }
-        //}
-
+        public int MaxPersons { get; protected set; }
+        
         public override string ToString()
         {
             return $"Elevator: {Id}\nCapacity: {MaxPersons}\nFloors: {Floors.Count}";

@@ -16,6 +16,15 @@ This project features the following capabilities.
 - queueing to effectively and efficiently manage elevator requests
 - a simulator aiding the console app with starting the elevator action. Can also be used with a different interface such as an api
 
+## Optional Features
+- Background service to process queues: Should be used only with multi-threaded presentation, such as an api
+- 
+## Gegenral notes
+
+The application is limited to a single input and process at a time, since a console application cannot handle multiple inputs at the same time.
+This has lead to using a single while loop to process queues, while disabling the backround service to avoid unecessary problems, such as random message and input requests.
+The emergency stop function is hotwired to work, but the best would be to utilize it with an api to properly manage cancellation tokens.
+
 ## Getting Started
 
 Make sure ElevatorAction.ConsoleUI is your startup project (when using Visual Studio or VS Code) and run. The rest will be configured in the application.

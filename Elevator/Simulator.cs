@@ -1,19 +1,20 @@
-﻿using ElevatorAction.Domain.Enums;
-using ElevatorAction.Domain.Entities;
+﻿using ElevatorAction.Application;
 using ElevatorAction.ConsoleUI.Extensions;
 using ElevatorAction.ConsoleUI.Helpers;
-using System.Text;
-using ElevatorAction.Domain.Interfaces;
-using ElevatorAction.Application;
 using ElevatorAction.ConsoleUI.Interfaces;
-using System.Drawing;
+using ElevatorAction.Domain.Entities;
+using ElevatorAction.Domain.Enums;
+using ElevatorAction.Domain.Interfaces;
+using Microsoft.Extensions.Configuration;
+using System.Text;
 
 namespace ElevatorAction.ConsoleUI
 {
     internal class Simulator : ISimulator
     {
-        private readonly IInputManager _inputManager;
         private readonly IElevatorControlService _controller;
+        private readonly IInputManager _inputManager;
+        private readonly int _maximumCapacity;
         private readonly IOutputManager _outputManager;
         List<Button> buttons = new();
         List<Elevator> elevators = new(); // Used for storing elevators
@@ -21,27 +22,12 @@ namespace ElevatorAction.ConsoleUI
                                     // Buttons (default and extended) per elevator and floor
         bool quickStart = false;
 
-        public Simulator(IInputManager inputManager, IOutputManager outputManager, IElevatorControlService controller)
+        public Simulator(IInputManager inputManager, IOutputManager outputManager, IElevatorControlService controller, IConfiguration configuration)
         {
             _inputManager = inputManager ?? throw new ArgumentNullException(nameof(inputManager));
             _outputManager = outputManager ?? throw new ArgumentNullException(nameof(outputManager));
             _controller = controller;
-        }
-
-        void TempSetup()
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                AddElevator();
-            }
-            for (int i = 0; i < 10; i++)
-            {
-                AddFloor(i);
-            }
-            foreach(var elevator in elevators)
-            {
-                AddAllFloorsToElevator(elevator);
-            }
+            _maximumCapacity = configuration.GetValue<int>("Elevator:MaximumCapacity");
         }
 
         /// <summary>
@@ -57,19 +43,9 @@ namespace ElevatorAction.ConsoleUI
             }
 
             // Instantiate main elevator controller service
-            //IElevatorControlService controller = new ElevatorControlService(services, floors);
-
-            //_controller = new ElevatorControlService();
-
             _controller.Init(services, floors);
 
             _controller.RequestReceived += ControlService_RequestReceived; // Everytime a request is received
-
-            // Event for when an elevator has arrived on floor and needs user input
-            _controller.ElevatorArrived += async (s, e) =>
-            {
-                await ControlService_ElevatorArrivedAsync(s, e);
-            }; // Everytime an elevator arrived after request
 
             _outputManager.Clear();
             Console.WriteLine("Welcome to Elevator action! Pres ctrl + c to close the application.");
@@ -77,21 +53,6 @@ namespace ElevatorAction.ConsoleUI
             await SimulatePerson();
 
             //_outputManager.Clear();
-        }
-
-        private static void ControlService_RequestReceived(object? sender, RequestEventArgs e)
-        {
-            Console.WriteLine($"New elevator request received for floor {e.Floor}, direction {e.Direction}");
-        }
-
-        private async Task<RequestEventArgs> ControlService_ElevatorArrivedAsync(object? sender, RequestEventArgs e)
-        {
-            Console.Clear();
-            var floor = await Task.Run(() => e.Floor = _inputManager.NumberInput($"Elevator at floor {e.Floor} has arived. Which floor would you like to go to?"));
-
-            return e;
-
-            //Console.WriteLine($"New elevator request received for floor {e.Floor}, direction {e.Direction}");
         }
 
         /// <summary>
@@ -117,7 +78,7 @@ namespace ElevatorAction.ConsoleUI
                     directions = quickStart ? ElevatorDirection.Up : _inputManager.DirectionInput(Constants.Input.Direction);
                 }
 
-                await _controller.RequestElevatorAsync(new Request(currentFloor, people, directions)); 
+                await _controller.RequestElevatorAsync(new Request(currentFloor, people, directions));
             }
         }
 
@@ -212,11 +173,16 @@ namespace ElevatorAction.ConsoleUI
                 }
                 if (!elevators.Any())
                 {
-                    elevators.Add(new Elevator());
+                    elevators.Add(new Elevator(_maximumCapacity));
                 }
 
                 await Run();
             }
+        }
+
+        private static void ControlService_RequestReceived(object? sender, RequestEventArgs e)
+        {
+            Console.WriteLine($"New elevator request received for floor {e.Floor}, direction {e.Direction}");
         }
 
         private void AddAllFloorsToElevator(Elevator elevator)
@@ -230,7 +196,7 @@ namespace ElevatorAction.ConsoleUI
 
         private void AddElevator()
         {
-            var newElevator = new Elevator();
+            var newElevator = new Elevator(_maximumCapacity);
             elevators.Add(newElevator);
             Console.WriteLine("New elevator has been added.");
 
@@ -337,6 +303,22 @@ namespace ElevatorAction.ConsoleUI
         {
             _outputManager.Clear();
             PrintOptions();
+        }
+
+        void TempSetup()
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                AddElevator();
+            }
+            for (int i = 0; i < 10; i++)
+            {
+                AddFloor(i);
+            }
+            foreach(var elevator in elevators)
+            {
+                AddAllFloorsToElevator(elevator);
+            }
         }
     }
 }

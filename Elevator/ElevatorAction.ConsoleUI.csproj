@@ -18,4 +18,10 @@
     <ProjectReference Include="..\ElevatorAction.Domain\ElevatorAction.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
