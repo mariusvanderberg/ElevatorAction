@@ -1,6 +1,8 @@
-﻿using ElevatorAction.ConsoleUI.Interfaces;
+﻿using ElevatorAction.Application;
+using ElevatorAction.Domain.Common;
 using ElevatorAction.Domain.Enums;
 using ElevatorAction.Domain.Interfaces;
+using Constants = ElevatorAction.Application.Constants;
 
 namespace ElevatorAction.ConsoleUI.Helpers
 {

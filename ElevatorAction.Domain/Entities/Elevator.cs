@@ -1,4 +1,6 @@
-﻿using ElevatorAction.Domain.Enums;
+﻿using ElevatorAction.Domain.Common;
+using ElevatorAction.Domain.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace ElevatorAction.Domain.Entities
 {
@@ -10,6 +12,10 @@ namespace ElevatorAction.Domain.Entities
 
         public Elevator(int weightLimit = MAXCAPACITY)
         {
+            if (weightLimit <= 0 )
+            {
+                throw new ValidationException(Constants.MaxPersonsError); // Could be handled through FluentValidation
+            }
             Id = Guid.NewGuid();
             MaxPersons = weightLimit;
         }
@@ -29,12 +35,11 @@ namespace ElevatorAction.Domain.Entities
 
         public ElevatorDirection Direction { get; set; }
         public ElevatorState ElevatorState { get; set; } = ElevatorState.Stationary;
-        public List<Floor> Floors { get => floors; set => floors = value; }
         public int MaxPersons { get; protected set; }
-        
-        public override string ToString()
+        public void AddFloor(Floor floor)
         {
-            return $"Elevator: {Id}\nCapacity: {MaxPersons}\nFloors: {Floors.Count}";
+            if (!floors.Any(x => x.Id == floor.Id))
+                floors.Add(floor);
         }
     }
 }

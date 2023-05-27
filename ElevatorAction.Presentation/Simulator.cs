@@ -1,4 +1,5 @@
 ﻿using ElevatorAction.Application;
+using ElevatorAction.Application.Common;
 using ElevatorAction.ConsoleUI.Extensions;
 using ElevatorAction.ConsoleUI.Helpers;
 using ElevatorAction.ConsoleUI.Interfaces;
@@ -7,10 +8,11 @@ using ElevatorAction.Domain.Enums;
 using ElevatorAction.Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
 using System.Text;
+using Constants = ElevatorAction.Application.Constants;
 
 namespace ElevatorAction.ConsoleUI
 {
-    internal class Simulator : ISimulator
+    public class Simulator : ISimulator
     {
         private readonly IElevatorControlService _controller;
         private readonly IInputManager _inputManager;
@@ -19,6 +21,9 @@ namespace ElevatorAction.ConsoleUI
         private List<Elevator> elevators = new(); // Used for storing elevators
         private List<Floor> floors = new(); // Building block floor configuration
         bool quickStart = false;
+        private bool _isRunning;
+
+        public List<Elevator> Elevators { get => elevators; set => elevators = value; }
 
         public Simulator(IInputManager inputManager, IOutputManager outputManager, IElevatorControlService controller, IConfiguration configuration)
         {
@@ -29,17 +34,23 @@ namespace ElevatorAction.ConsoleUI
         }
 
         /// <inheritdoc/>
-        public async Task Run()
+        public async Task<bool> Run()
         {
+            // Validate elevators
+            if (Elevators.Count == 0)
+            {
+                return _isRunning;
+            }
+            _isRunning = true;
             List<IElevatorService> services = new List<IElevatorService>();
             // Start the application
-            foreach (Elevator elevator in elevators)
+            foreach (Elevator elevator in Elevators)
             {
-                services.Add(new ElevatorService(elevator));
+                services.Add(new ElevatorService(elevator, new AsyncDelayer()));
             }
 
             // Instantiate main elevator controller service
-            _controller.Init(services, floors);
+            _controller.Initialize(services, floors);
 
             _controller.RequestReceived += ControlService_RequestReceived; // Everytime a request is received
 
@@ -47,9 +58,12 @@ namespace ElevatorAction.ConsoleUI
             Console.WriteLine(Constants.Simulator.Welcome);
 
             await SimulatePerson();
+
+            return true;
         }
 
-        public async Task Start()
+        /// <inheritdoc/>
+        public async Task<bool> Start()
         {
             Console.OutputEncoding = Encoding.UTF8; // make sure we can print out UTF8 characters
             Console.WriteLine(Constants.Messages.Welcome);
@@ -70,6 +84,16 @@ namespace ElevatorAction.ConsoleUI
                     {
                         case ApplicationOptions.Run:
                             // We will attempt to Run the simulator
+                            TempSetup(); // TODO: REMOVE!!
+
+                            if (!floors.Any())
+                            {
+                                AddFloors();
+                            }
+                            if (!Elevators.Any())
+                            {
+                                Elevators.Add(new Elevator(_maximumCapacity));
+                            }
                             break;
                         case ApplicationOptions.Add:
                             AddElevator();
@@ -83,7 +107,7 @@ namespace ElevatorAction.ConsoleUI
                             PrintOptions();
                             break;
                         case ApplicationOptions.Reset:
-                            elevators.Clear();
+                            Elevators.Clear();
                             floors.Clear();
                             RefreshScreen();
                             Console.WriteLine(Constants.Simulator.Reset);
@@ -110,47 +134,54 @@ namespace ElevatorAction.ConsoleUI
             }
             else
             {
+                // Run application was chosen
                 ReadLine.AutoCompletionHandler = new SimulatorAutoCompletionHandler();
                 Console.WriteLine(Constants.Simulator.Running);
 
-                TempSetup(); // TODO: REMOVE!!
-
-                if (!floors.Any())
-                {
-                    AddFloors();
-                }
-                if (!elevators.Any())
-                {
-                    elevators.Add(new Elevator(_maximumCapacity));
-                }
-
-                await Run();
+                return await Run();
             }
+
+            return true;
         }
 
+        /// <summary>
+        /// Feedback for when a request is received
+        /// </summary>
+        /// <param name="sender">Sender of the request</param>
+        /// <param name="e">Eventargs: <see cref="RequestEventArgs"/></param>
         private static void ControlService_RequestReceived(object? sender, RequestEventArgs e)
         {
             Console.WriteLine(string.Format(Constants.Simulator.RequestReceived, e.Floor, e.Direction));
         }
 
+        /// <summary>
+        /// Adds all current floors to the elevator
+        /// </summary>
+        /// <param name="elevator"></param>
         private void AddAllFloorsToElevator(Elevator elevator)
         {
             for (int i = 0; i < floors.Count; i++)
             {
-                if (!elevator.Floors.Any(x => x.Id == floors[i].Id))
-                    elevator.Floors.Add(floors[i]);
+                elevator.AddFloor(floors[i]);
             }
         }
 
+        /// <summary>
+        /// Adds a new elevator
+        /// </summary>
         private void AddElevator()
         {
             var newElevator = new Elevator(_maximumCapacity);
-            elevators.Add(newElevator);
+            Elevators.Add(newElevator);
             Console.WriteLine(Constants.Simulator.ElevatorAdded);
 
             AddFloorsToElevator(ref newElevator);
         }
 
+        /// <summary>
+        /// Adds a new floor
+        /// </summary>
+        /// <param name="floorNumber"></param>
         private void AddFloor(int floorNumber)
         {
             Floor floor = new()
@@ -163,6 +194,9 @@ namespace ElevatorAction.ConsoleUI
             floors.Add(floor);
         }
 
+        /// <summary>
+        /// Add multiple floors according to input
+        /// </summary>
         private void AddFloors()
         {
             int floorCount, groundFloor;
@@ -174,24 +208,26 @@ namespace ElevatorAction.ConsoleUI
             // Which level is the ground floor?
             groundFloor = _inputManager.NumberInput(Constants.Simulator.GroundLevel);
 
-            for (var i = groundFloor * -1 + 1; i < floorCount - groundFloor + 1; i++)
-            {
-                AddFloor(i);
-            }
+            // Work out floor levels
+            FloorHelper.Iterate(groundFloor, floorCount, AddFloor);
 
             // If elevators have been added, suggest to apply floor changes
-            if (elevators.Count > 0)
+            if (Elevators.Count > 0)
             {
                 if (_inputManager.YesNoInput(Constants.Simulator.FloorConfigAll))
                 {
-                    for (int i = 0; i < elevators.Count; i++)
+                    for (int i = 0; i < Elevators.Count; i++)
                     {
-                        AddAllFloorsToElevator(elevators[i]);
+                        AddAllFloorsToElevator(Elevators[i]);
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Configure new floors for the elevator
+        /// </summary>
+        /// <param name="elevator">Ref to the Elevator</param>
         private void AddFloorsToElevator(ref Elevator elevator)
         {
             if (floors.Count > 0)
@@ -241,7 +277,7 @@ namespace ElevatorAction.ConsoleUI
         {
             foreach (ApplicationOptions opt in Enum.GetValues(typeof(ApplicationOptions)))
             {
-                Console.WriteLine(string.Format(Constants.OptionsFormat, (int)opt, opt, opt.GetEnumDescription()));
+                Console.WriteLine(string.Format(Constants.Formatting.OptionsFormat, (int)opt, opt, opt.GetEnumDescription()));
             }
 
             Console.WriteLine(Constants.Messages.Intro);
@@ -259,9 +295,9 @@ namespace ElevatorAction.ConsoleUI
         /// <summary>
         /// This simulates a person at a controller needing assistance
         /// </summary>
-        private async Task SimulatePerson()
+        private async Task<bool> SimulatePerson()
         {
-            while (true)
+            while (_isRunning)
             {
                 // Print out floor config
                 Console.WriteLine(string.Format(Constants.Simulator.Selection, floors.Count, floors.MinBy(x => x.Number)?.Number, floors.MaxBy(x => x.Number)?.Number));
@@ -281,7 +317,10 @@ namespace ElevatorAction.ConsoleUI
 
                 await _controller.RequestElevatorAsync(new Request(currentFloor, people, directions));
             }
+
+            return true;
         }
+
         /// <summary>
         /// Easy setup. NB!! REMOVE before prod
         /// </summary>
@@ -291,11 +330,11 @@ namespace ElevatorAction.ConsoleUI
             {
                 AddElevator();
             }
-            for (int i = 0; i < 10; i++)
+            for (int i = -3; i < 9; i++)
             {
                 AddFloor(i);
             }
-            foreach(var elevator in elevators)
+            foreach(var elevator in Elevators)
             {
                 AddAllFloorsToElevator(elevator);
             }

@@ -1,5 +1,7 @@
 ﻿using Autofac;
 using ElevatorAction.Application;
+using ElevatorAction.Application.Interfaces;
+using ElevatorAction.Application.Workers;
 using ElevatorAction.ConsoleUI;
 using ElevatorAction.ConsoleUI.Helpers;
 using ElevatorAction.ConsoleUI.Interfaces;
@@ -53,6 +55,7 @@ static IContainer BuildContainer(IConfiguration configuration)
     builder.RegisterType<InputManager>().As<IInputManager>();
     builder.RegisterType<OutputManager>().As<IOutputManager>();
     builder.RegisterType<Simulator>().As<ISimulator>();
+    builder.RegisterType<AsyncDelayer>().As<IAsyncDelayer>();
 
     // Register the elevator background service
     builder.RegisterType<ElevatorBackgroundService>().As<IHostedService>();

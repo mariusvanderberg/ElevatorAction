@@ -1,4 +1,5 @@
-﻿using ElevatorAction.Domain.Entities;
+﻿using ElevatorAction.Application.Common;
+using ElevatorAction.Domain.Entities;
 using ElevatorAction.Domain.Enums;
 
 namespace ElevatorAction.Domain.Interfaces
@@ -14,7 +15,7 @@ namespace ElevatorAction.Domain.Interfaces
         /// <returns>Directions that the elevator can go</returns>
         ElevatorDirection GetAvailableDirections(int floor);
 
-        void Init(List<IElevatorService> elevatorServices, List<Floor> floors);
+        void Initialize(List<IElevatorService> elevatorServices, List<Floor> floors);
 
         /// <summary>
         /// This needs to be hooked up to a poller

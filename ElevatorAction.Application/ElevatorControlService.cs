@@ -1,4 +1,5 @@
-﻿using ElevatorAction.Domain.Entities;
+﻿using ElevatorAction.Application.Common;
+using ElevatorAction.Domain.Entities;
 using ElevatorAction.Domain.Enums;
 using ElevatorAction.Domain.Interfaces;
 
@@ -14,7 +15,7 @@ namespace ElevatorAction.Application
         private List<IElevatorService> _elevatorServices = new();
         private List<Floor> _floors = new();
         private Queue<Request> _requestQueue = new();
-        private bool initialised = false;
+        private bool _isInitialised = false;
 
         public ElevatorControlService(IInputManager inputManager)
         {
@@ -52,9 +53,9 @@ namespace ElevatorAction.Application
         /// </summary>
         /// <param name="elevatorServices"><see cref="IElevatorService"/>: List of services</param>
         /// <param name="floors"><see cref="Floor"/>: List of floors</param>
-        public void Init(List<IElevatorService> elevatorServices, List<Floor> floors)
+        public void Initialize(List<IElevatorService> elevatorServices, List<Floor> floors)
         {
-            if (initialised)
+            if (_isInitialised)
             {
                 Console.WriteLine(Constants.InitializedAlready);
                 return;
@@ -62,7 +63,7 @@ namespace ElevatorAction.Application
             _elevatorServices = elevatorServices;
             _floors = floors;
             _requestQueue = new Queue<Request>();
-            initialised = true;
+            _isInitialised = true;
         }
 
         /// <inheritdoc/>

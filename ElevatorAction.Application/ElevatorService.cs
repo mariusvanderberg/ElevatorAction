@@ -1,4 +1,6 @@
-﻿using ElevatorAction.Domain.Entities;
+﻿using ElevatorAction.Application.Common;
+using ElevatorAction.Application.Interfaces;
+using ElevatorAction.Domain.Entities;
 using ElevatorAction.Domain.Enums;
 using ElevatorAction.Domain.Interfaces;
 using System.Drawing;
@@ -8,10 +10,12 @@ namespace ElevatorAction.Application
     public class ElevatorService : IElevatorService
     {
         private readonly Elevator _elevator;
+        private readonly IAsyncDelayer _asyncDelayer;
 
-        public ElevatorService(Elevator elevator)
+        public ElevatorService(Elevator elevator, IAsyncDelayer asyncDelayer)
         {
             _elevator = elevator;
+            _asyncDelayer = asyncDelayer;
         }
 
         /// <inheritdoc/>
@@ -111,12 +115,12 @@ namespace ElevatorAction.Application
         /// </summary>
         /// <param name="stoppingToken"><see cref="CancellationToken"/></param>
         /// <returns>bool indicating success</returns>
-        private static async Task<bool> SimulateDoorsClosingAsync(CancellationToken stoppingToken)
+        private async Task<bool> SimulateDoorsClosingAsync(CancellationToken stoppingToken)
         {
             Console.Write(Constants.Doors.Closing);
-            await Task.Delay(Constants.Doors.OpenClosingDelay, stoppingToken);
+            await _asyncDelayer.Delay(Constants.Doors.OpenClosingDelay, stoppingToken);
             Console.WriteLine($"{Constants.Doors.Closed} ");
-            await Task.Delay(Constants.Doors.OpenClosedDelay, stoppingToken);
+            await _asyncDelayer.Delay(Constants.Doors.OpenClosedDelay, stoppingToken);
 
             return true;
         }
@@ -126,10 +130,10 @@ namespace ElevatorAction.Application
         /// </summary>
         /// <param name="stoppingToken"><see cref="CancellationToken"/></param>
         /// <returns>bool indicating success</returns>
-        private static async Task<bool> SimulateDoorsOpeningAsync(CancellationToken stoppingToken)
+        private async Task<bool> SimulateDoorsOpeningAsync(CancellationToken stoppingToken)
         {
             Console.Write($"{Constants.Doors.Opening} ");
-            await Task.Delay(Constants.Doors.OpenClosingDelay, stoppingToken);
+            await _asyncDelayer.Delay(Constants.Doors.OpenClosingDelay, stoppingToken);
             Console.Write($"{Constants.Doors.Open} ");
             Console.WriteLine();
 
@@ -161,6 +165,8 @@ namespace ElevatorAction.Application
             _elevator.Direction = direction;
 
             Console.WriteLine(string.Format(Constants.Operation.Movement, direction.ToString().ToLower()));
+            // Print current floor
+            Console.Write(string.Format(Constants.Formatting.ElevatorMovingFormat, _elevator.CurrentPersons, _elevator.CurrentFloor));
 
             // Simulating elevator movement
             while (_elevator.CurrentFloor != floorNumber)
@@ -181,11 +187,13 @@ namespace ElevatorAction.Application
                     _elevator.CurrentFloor--;
 
                 // Simulate delay between floors. This is a Maglev elevator, super fast!
-                await Task.Delay(TimeSpan.FromMilliseconds(500), stoppingToken);
+                await _asyncDelayer.Delay(500, stoppingToken);
+
+                // Clears input
+                Console.Write("\r" + new string(' ', _elevator.CurrentFloor.ToString().Length) + "\r");
 
                 // Print current floor
-                Console.Write(string.Format(Constants.Messages.ElevatorMovingFormat, _elevator.CurrentPersons, _elevator.CurrentFloor));
-                Console.SetCursorPosition(0, Console.CursorTop);
+                Console.Write(string.Format(Constants.Formatting.ElevatorMovingFormat, _elevator.CurrentPersons, _elevator.CurrentFloor));
             }
             Console.WriteLine();
 

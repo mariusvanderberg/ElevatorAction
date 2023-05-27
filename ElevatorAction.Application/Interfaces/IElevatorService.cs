@@ -1,4 +1,5 @@
-﻿using ElevatorAction.Domain.Entities;
+﻿using ElevatorAction.Application.Common;
+using ElevatorAction.Domain.Common;
 using ElevatorAction.Domain.Enums;
 
 namespace ElevatorAction.Domain.Interfaces

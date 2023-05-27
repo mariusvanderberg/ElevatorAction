@@ -18,7 +18,7 @@ This project features the following capabilities.
 
 ## Optional Features
 - Background service to process queues: Should be used only with multi-threaded presentation, such as an api
-- 
+
 ## Gegenral notes
 
 The application is limited to a single input and process at a time, since a console application cannot handle multiple inputs at the same time.

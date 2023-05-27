@@ -1,6 +1,6 @@
 ﻿using ElevatorAction.Domain.Enums;
 
-namespace ElevatorAction.Domain.Entities
+namespace ElevatorAction.Application.Common
 {
     /// <summary>
     /// This class is used for transport between messages

@@ -24,6 +24,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ElevatorAction.ConsoleUI", "ElevatorAction.Presentation\ElevatorAction.ConsoleUI.csproj", "{86356D69-EB39-4322-9775-ABE3AB40384B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElevatorAction.Tests", "ElevatorAction.Tests\ElevatorAction.Tests.csproj", "{B316BD0B-D487-4635-8D75-FF8629FE0FA9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,6 +44,10 @@ Global
 		{86356D69-EB39-4322-9775-ABE3AB40384B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{86356D69-EB39-4322-9775-ABE3AB40384B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{86356D69-EB39-4322-9775-ABE3AB40384B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B316BD0B-D487-4635-8D75-FF8629FE0FA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B316BD0B-D487-4635-8D75-FF8629FE0FA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B316BD0B-D487-4635-8D75-FF8629FE0FA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B316BD0B-D487-4635-8D75-FF8629FE0FA9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,6 +56,7 @@ Global
 		{48DEB08F-8334-4CDC-B727-76FE8DFE5B1D} = {635D13CC-4BDB-49D9-BA49-F2A4CCB64C96}
 		{FF8FE819-C2C2-4BFE-B4C8-327C7DE9FABB} = {C3B3EF0C-3CCE-499D-AAD1-02945CC92E48}
 		{86356D69-EB39-4322-9775-ABE3AB40384B} = {1C9F3082-6EFD-486B-9D53-18767F231D89}
+		{B316BD0B-D487-4635-8D75-FF8629FE0FA9} = {51EE5A29-B244-4272-8504-13D7558993CF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CE4DC223-3491-4F9B-B42E-300F1CD7AEC2}

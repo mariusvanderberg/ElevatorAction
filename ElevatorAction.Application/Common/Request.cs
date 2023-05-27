@@ -1,6 +1,6 @@
 ﻿using ElevatorAction.Domain.Enums;
 
-namespace ElevatorAction.Domain.Entities
+namespace ElevatorAction.Application.Common
 {
     public class Request
     {

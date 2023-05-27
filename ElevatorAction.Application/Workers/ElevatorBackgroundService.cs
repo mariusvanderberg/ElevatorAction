@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
-namespace ElevatorAction.Application;
+namespace ElevatorAction.Application.Workers;
 
 public class ElevatorBackgroundService : BackgroundService
 {
