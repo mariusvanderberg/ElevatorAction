@@ -1,6 +1,5 @@
 ﻿using ElevatorAction.ConsoleUI.Helpers;
 using ElevatorAction.Domain.Entities;
-using System.Text.RegularExpressions;
 using static ElevatorAction.Application.Constants;
 
 namespace ElevatorAction.Tests.Elevators

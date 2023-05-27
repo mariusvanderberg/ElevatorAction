@@ -41,5 +41,9 @@ namespace ElevatorAction.Domain.Entities
             if (!floors.Any(x => x.Id == floor.Id))
                 floors.Add(floor);
         }
+        public IEnumerable<Floor> GetFloors()
+        {
+            return floors;
+        }
     }
 }

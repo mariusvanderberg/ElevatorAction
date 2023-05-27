@@ -48,6 +48,13 @@ namespace ElevatorAction.Domain.Interfaces
         int GetNumberOfPeople();
 
         /// <summary>
+        /// Checks if the elevator service is able to reach a floor
+        /// </summary>
+        /// <param name="floorNumber">Floor number in question</param>
+        /// <returns>bool indicating if the elevator service supports the level</returns>
+        bool HasFloor(int floorNumber);
+
+        /// <summary>
         /// Will be able to tell if there's space for the people requesting a
         /// lift
         /// </summary>

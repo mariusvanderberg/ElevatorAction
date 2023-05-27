@@ -70,6 +70,10 @@ namespace ElevatorAction.Application
         /// <inheritdoc/>
         public async Task<bool> MoveToFloorAsync(int floorNumber, ElevatorDirection direction, CancellationToken stoppingToken)
         {
+            if (!HasFloor(floorNumber))
+            {
+                throw new ArgumentOutOfRangeException(nameof(floorNumber), Constants.Operation.InvalidFloor);
+            }
             await SimulateDoorsClosingAsync(stoppingToken);
 
             Console.WriteLine($"{string.Format(Constants.Operation.ElevatorMoving, _elevator.Id, _elevator.CurrentFloor, floorNumber)} ");
@@ -91,6 +95,10 @@ namespace ElevatorAction.Application
         /// <inheritdoc/>
         public async Task<bool> ProcessRequestAsync(Request request, CancellationToken stoppingToken)
         {
+            if (!HasFloor(request.Floor))
+            {
+                throw new ArgumentOutOfRangeException(nameof(request.Floor), Constants.Operation.InvalidFloor);
+            }
             // Process the request here (e.g., open doors, handle passengers, etc.)
             Console.WriteLine(string.Format(Constants.Operation.ElevatorOnRoute, _elevator.Id, request.Floor, request.People));
 
@@ -152,6 +160,7 @@ namespace ElevatorAction.Application
 
             return ElevatorDirection.Up;
         }
+
         /// <summary>
         /// This will simulate and actual elevator moving. We can enhance it by animating it
         /// </summary>
@@ -198,6 +207,12 @@ namespace ElevatorAction.Application
             Console.WriteLine();
 
             return true;
+        }
+
+        /// <inheritdoc/>
+        public bool HasFloor(int floorNumber)
+        {
+            return _elevator.GetFloors().Any(x => x.Number == floorNumber);
         }
     }
 }

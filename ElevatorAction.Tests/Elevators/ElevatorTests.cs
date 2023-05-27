@@ -30,14 +30,11 @@ namespace ElevatorAction.Tests.Elevators
         }
 
         [Test]
-        public void Adding_Elevators_With_Invalid_Capacity_Should_Throw()
-        {
-            // Arrange / Act
-            int defaultCapacity = -10;
-
-            // Assert
-            Assert.Throws<ValidationException>(() => _elevator = new Elevator(defaultCapacity));
-        }
+        [TestCase(0)]
+        [TestCase(-10)]
+        public void Adding_Elevators_With_Invalid_Capacity_Should_Throw(int capacity) =>
+            // Arrange / Act / Assert
+            Assert.Throws<ValidationException>(() => _elevator = new Elevator(capacity));
 
         [Test]
         [TestCase(1)]

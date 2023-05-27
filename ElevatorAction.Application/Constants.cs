@@ -4,7 +4,7 @@ namespace ElevatorAction.Application;
 
 public static class Constants
 {
-    public const string InitializedAlready = "Init can only happen once";
+    public const string InitializedAlready = "Already initialized.";
 
     public static class Doors
     {
@@ -37,7 +37,7 @@ public static class Constants
         public const string Separator = ", ";
         public const string ThankYou = "Thank you.";
         public const string Welcome = "Welcome, please select an option below:";
-        public const string YesNoAppend = "{0} Enter {1} for yes and {2} for no.";
+        public const string YesNoAppend = "{0} ({1}/{2})";
     }
 
     public static class Operation
@@ -50,6 +50,7 @@ public static class Constants
         public const string ElevatorReady = "Elevator ready and loaded. Which floor would you like to go to?";
         public const string EmergencyStop = "Emergency stop requested. Stopping elevator.";
         public const string Error = "Please provide a number";
+        public const string InvalidFloor = "Invalid floor selected.";
         public const string Movement = "Elevator going {0}";
         public const string NoElevators = "We currently have no elevators that take {0} people. We will send more elevators, please wait.";
     }
