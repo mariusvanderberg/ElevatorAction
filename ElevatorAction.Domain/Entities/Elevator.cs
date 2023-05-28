@@ -15,7 +15,6 @@ namespace ElevatorAction.Domain.Entities
             {
                 throw new ValidationException(Constants.MaxPersonsError); // Could be handled through FluentValidation
             }
-            Id = Guid.NewGuid();
             MaxPersons = weightLimit;
         }
 
