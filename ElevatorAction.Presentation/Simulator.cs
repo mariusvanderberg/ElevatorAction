@@ -13,16 +13,13 @@ namespace ElevatorAction.ConsoleUI
 {
     public class Simulator : ISimulator
     {
-        private readonly IElevatorControlService _controller;
         private readonly IAsyncDelayer _asyncDelayer;
+        private readonly IElevatorControlService _controller;
         private readonly IInputManager _inputManager;
         private readonly int _maximumCapacity;
         private readonly IOutputManager _outputManager;
-        private List<Elevator> elevators = new(); // Used for storing elevators
-        private List<Floor> floors = new(); // Building block floor configuration
+        private readonly List<Floor> floors = new(); // Building block floor configuration
         private bool _isRunning;
-
-        public List<Elevator> Elevators { get => elevators; set => elevators = value; }
 
         public Simulator(IInputManager inputManager, IOutputManager outputManager, IElevatorControlService controller, IConfiguration configuration, IAsyncDelayer asyncDelayer)
         {
@@ -33,6 +30,7 @@ namespace ElevatorAction.ConsoleUI
             _asyncDelayer = asyncDelayer;
         }
 
+        public List<Elevator> Elevators { get; set; } = new();
         /// <inheritdoc/>
         public async Task<bool> Run()
         {
@@ -86,8 +84,6 @@ namespace ElevatorAction.ConsoleUI
                     {
                         case ApplicationOptions.Run:
                             // We will attempt to Run the simulator
-                            //TempSetup(); // TODO: REMOVE!!
-
                             if (!floors.Any())
                             {
                                 AddFloors();
@@ -157,6 +153,19 @@ namespace ElevatorAction.ConsoleUI
         }
 
         /// <summary>
+        /// Writes application options to output
+        /// </summary>
+        private static void PrintOptions()
+        {
+            foreach (ApplicationOptions opt in Enum.GetValues(typeof(ApplicationOptions)))
+            {
+                Console.WriteLine(string.Format(Constants.Formatting.OptionsFormat, (int)opt, opt, opt.GetEnumDescription()));
+            }
+
+            Console.WriteLine(Constants.Messages.Intro);
+        }
+
+        /// <summary>
         /// Adds all current floors to the elevator
         /// </summary>
         /// <param name="elevator"></param>
@@ -214,14 +223,11 @@ namespace ElevatorAction.ConsoleUI
             FloorHelper.Iterate(groundFloor, floorCount, AddFloor);
 
             // If elevators have been added, suggest to apply floor changes
-            if (Elevators.Count > 0)
+            if (Elevators.Count > 0 && _inputManager.YesNoInput(Constants.Simulator.FloorConfigAll))
             {
-                if (_inputManager.YesNoInput(Constants.Simulator.FloorConfigAll))
+                for (int i = 0; i < Elevators.Count; i++)
                 {
-                    for (int i = 0; i < Elevators.Count; i++)
-                    {
-                        AddAllFloorsToElevator(Elevators[i]);
-                    }
+                    AddAllFloorsToElevator(Elevators[i]);
                 }
             }
         }
@@ -243,19 +249,16 @@ namespace ElevatorAction.ConsoleUI
                     // Prompt if they would like to use existing floors or add more
                     if (_inputManager.YesNoInput(string.Format(Constants.Simulator.ExistingFloor, floors.Count)))
                     {
-                        // Which floors then?
-                        Console.WriteLine(string.Format(Constants.Simulator.FloorCount, floors.Count));
-                        for (int i = 0; i < floors.Count; i++)
+                        while (elevator.GetFloors().Count() < 2)
                         {
-                            if (i > 0)
-                            {
-                                Console.Write(Constants.Messages.Separator);
-                            }
-                            Console.Write(floors[i].Number);
-                        }
+                            // Which floors then?
+                            Console.WriteLine(string.Format(Constants.Simulator.FloorCount, floors.Count));
+                            Console.WriteLine(string.Join(Constants.Messages.Separator, floors.Select(floor => floor.Number)));
 
-                        var floorNumber = _inputManager.BetweenNumberInput(string.Empty, floors.MinBy(x => x.Number)!.Number, floors.MaxBy(x => x.Number)!.Number);
-                        elevator.AddFloor(floors[floorNumber]);
+                            var floorNumber = _inputManager.BetweenNumberInput(string.Empty, floors.MinBy(x => x.Number)!.Number, floors.MaxBy(x => x.Number)!.Number);
+                            elevator.AddFloor(floors[floorNumber]);
+                            Console.Write(Constants.Simulator.ElevatorFloorAdded);
+                        }
                     }
                     else
                     {
@@ -269,20 +272,6 @@ namespace ElevatorAction.ConsoleUI
                 AddFloors();
             }
         }
-
-        /// <summary>
-        /// Writes application options to output
-        /// </summary>
-        private static void PrintOptions()
-        {
-            foreach (ApplicationOptions opt in Enum.GetValues(typeof(ApplicationOptions)))
-            {
-                Console.WriteLine(string.Format(Constants.Formatting.OptionsFormat, (int)opt, opt, opt.GetEnumDescription()));
-            }
-
-            Console.WriteLine(Constants.Messages.Intro);
-        }
-
         /// <summary>
         /// This will clear the console and print options again
         /// </summary>
@@ -320,25 +309,6 @@ namespace ElevatorAction.ConsoleUI
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// Easy setup. NB!! REMOVE before prod
-        /// </summary>
-        void TempSetupX()
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                AddElevator();
-            }
-            for (int i = -3; i < 9; i++)
-            {
-                AddFloor(i);
-            }
-            foreach(var elevator in Elevators)
-            {
-                AddAllFloorsToElevator(elevator);
-            }
         }
     }
 }

@@ -44,6 +44,7 @@ public static class Constants
 
     public static class Operation
     {
+        public const string AvailableFloors = "Available floors: ";
         public const string Canceled = "Move operation canceled.";
         public const string DirectionError = "Cannot determine direction";
         public const string ElevatorArrived = "{0} has arrived on floor {1}";
@@ -60,6 +61,7 @@ public static class Constants
     {
         public const string About = "Elevator Action was inspired by the old TV Game, elevator action.\nThis is more elevator than action, but hope you enjoy the clean architecture though.";
         public const string ElevatorAdded = "New elevator has been added.";
+        public const string ElevatorFloorAdded = "Floor has been added to elevator.";
         public const string ExistingFloor = "Would you like to use one of the existing {0} floor(s) or add a new one?";
         public const string FloorConfigAll = "Would you like to add current floor configuration to all elevators?";
         public const string FloorConfigById = "Would you like to add current floor configuration to elevator {0}?";

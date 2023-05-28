@@ -1,5 +1,5 @@
 ﻿using ElevatorAction.Application.Common;
-using ElevatorAction.Domain.Common;
+using ElevatorAction.Domain.Entities;
 using ElevatorAction.Domain.Enums;
 
 namespace ElevatorAction.Application.Interfaces
@@ -14,6 +14,12 @@ namespace ElevatorAction.Application.Interfaces
         /// </summary>
         /// <returns>bool indicating if the elevator is full or not</returns>
         bool CapacityReached();
+
+        /// <summary>
+        /// Returns a list of available floor numbers
+        /// </summary>
+        /// <returns><see cref="IEnumerable{Floor}"/></returns>
+        IEnumerable<Floor> GetAvailableFloors();
 
         /// <summary>
         /// Returns the people capacity of the current elevator

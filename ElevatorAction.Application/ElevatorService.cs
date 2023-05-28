@@ -2,7 +2,6 @@
 using ElevatorAction.Application.Interfaces;
 using ElevatorAction.Domain.Entities;
 using ElevatorAction.Domain.Enums;
-using System.Drawing;
 
 namespace ElevatorAction.Application
 {
@@ -20,6 +19,12 @@ namespace ElevatorAction.Application
         public bool CapacityReached()
         {
             return _elevator.CurrentPersons >= _elevator.MaxPersons; // Could be that people overload, or that it's 10 cats and 1 human
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<Floor> GetAvailableFloors()
+        {
+            return _elevator.GetFloors();
         }
 
         /// <inheritdoc/>
@@ -164,6 +169,7 @@ namespace ElevatorAction.Application
 
             return true;
         }
+
         /// <summary>
         /// This will simulate and actual elevator moving. We can enhance it by animating it
         /// </summary>

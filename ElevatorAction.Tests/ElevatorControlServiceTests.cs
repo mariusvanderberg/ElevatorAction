@@ -85,8 +85,6 @@ namespace ElevatorAction.Tests
             int firstRequestFloor = 7, poeple = 100;
             var direction = ElevatorDirection.Up;
 
-            //var InputMgrMock = Resolve<IInputManager>();
-
             var mock = new Mock<IInputManager>();
             mock.Setup(m => m.NumberInput(It.IsAny<string>())).Returns(7);
 

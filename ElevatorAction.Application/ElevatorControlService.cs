@@ -2,6 +2,7 @@
 using ElevatorAction.Application.Interfaces;
 using ElevatorAction.Domain.Entities;
 using ElevatorAction.Domain.Enums;
+using static ElevatorAction.Application.Constants;
 
 namespace ElevatorAction.Application
 {
@@ -229,14 +230,20 @@ namespace ElevatorAction.Application
             // This handles the elevator itself, moving and then opening doors
             await elevatorService.ProcessRequestAsync(request, cts.Token);
 
-            int destinationFloor = await Task.Run(() => _inputManager.NumberInput($"{Constants.Operation.ElevatorReady} "));
+            Console.Write(Operation.AvailableFloors);
+            Console.WriteLine(string.Join(Messages.Separator, elevatorService.GetAvailableFloors().Select(floor => floor.Number)));
 
-            Task moveTask = elevatorService.MoveToFloorAsync(destinationFloor, request.Direction, cts.Token);
+            int destinationFloor;
+
+            do // Ensure correct floor is chosen
+            {
+                destinationFloor = await Task.Run(() => _inputManager.NumberInput($"{Operation.ElevatorReady} "));
+            } while (!elevatorService.HasFloor(destinationFloor));
 
             // Now let's move...
             try
             {
-                await moveTask;
+                await elevatorService.MoveToFloorAsync(destinationFloor, request.Direction, cts.Token);
             }
             catch (OperationCanceledException)
             {

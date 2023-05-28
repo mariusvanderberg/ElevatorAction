@@ -83,5 +83,4 @@ static void UnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs
     Console.WriteLine(exception?.ToString());
 
     // Optionally, you can exit the application or perform other actions
-    // Environment.Exit(1);
 }

@@ -7,9 +7,8 @@ namespace ElevatorAction.Domain.Entities
     public class Elevator : Entity
     {
         private const int MAXCAPACITY = 10; // default maximum capacity
+        private readonly List<Floor> floors = new();
         private Floor? currentFloor = new();
-        private List<Floor> floors = new();
-
         public Elevator(int weightLimit = MAXCAPACITY)
         {
             if (weightLimit <= 0 )
