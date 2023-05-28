@@ -1,5 +1,7 @@
 # Elevator Action - A Console application built with Clean architecture
 
+![example workflow](https://github.com/github/docs/actions/workflows/main.yml/badge.svg)
+
 Elevator action simulates the movement of elevators and hides the complexity by utlizing the power of services that encapsulates the inner workings, so you can worry about maintaining your domain.
 
 Need to swap out for a new elevator service? Sure, it's built modular for a reason. Need to use a different scheduling mechanism? Sure, let's replace the queueing system with Service Bus, if you wanted to.
