@@ -1,6 +1,6 @@
-# Elevator Action - A Console application built with Clean architecture
+![DotNet Build](https://github.com/mariusvanderberg/ElevatorAction/actions/workflows/dotnet.yml/badge.svg)
 
-![example workflow](https://github.com/github/docs/actions/workflows/main.yml/badge.svg)
+# Elevator Action - A Console application built with Clean architecture
 
 Elevator action simulates the movement of elevators and hides the complexity by utlizing the power of services that encapsulates the inner workings, so you can worry about maintaining your domain.
 
