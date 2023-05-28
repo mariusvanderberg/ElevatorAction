@@ -2,7 +2,7 @@
 using ElevatorAction.Domain.Common;
 using ElevatorAction.Domain.Enums;
 
-namespace ElevatorAction.Domain.Interfaces
+namespace ElevatorAction.Application.Interfaces
 {
     /// <summary>
     /// Service to control elevator operations

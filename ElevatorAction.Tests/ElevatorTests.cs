@@ -1,11 +1,12 @@
 ﻿using ElevatorAction.ConsoleUI.Helpers;
 using ElevatorAction.Domain.Entities;
 using ElevatorAction.Domain.Enums;
+using ElevatorAction.Tests.Setup;
 using Microsoft.Extensions.Configuration;
 using System.ComponentModel.DataAnnotations;
 using static ElevatorAction.Application.Constants;
 
-namespace ElevatorAction.Tests.Elevators
+namespace ElevatorAction.Tests
 {
     public class ElevatorTests : BaseTest
     {

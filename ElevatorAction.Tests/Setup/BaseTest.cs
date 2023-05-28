@@ -1,9 +1,7 @@
 ﻿using ElevatorAction.Application.Interfaces;
-using ElevatorAction.ConsoleUI.Interfaces;
-using ElevatorAction.Domain.Interfaces;
 using Moq;
 
-namespace ElevatorAction.Tests
+namespace ElevatorAction.Tests.Setup
 {
     [TestFixture]
     public class BaseTest : TestSetup

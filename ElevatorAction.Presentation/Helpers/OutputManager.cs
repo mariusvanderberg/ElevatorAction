@@ -1,4 +1,4 @@
-﻿using ElevatorAction.ConsoleUI.Interfaces;
+﻿using ElevatorAction.Application.Interfaces;
 
 namespace ElevatorAction.ConsoleUI.Helpers
 {

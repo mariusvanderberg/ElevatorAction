@@ -3,10 +3,8 @@ using ElevatorAction.Application.Common;
 using ElevatorAction.Application.Interfaces;
 using ElevatorAction.ConsoleUI.Extensions;
 using ElevatorAction.ConsoleUI.Helpers;
-using ElevatorAction.ConsoleUI.Interfaces;
 using ElevatorAction.Domain.Entities;
 using ElevatorAction.Domain.Enums;
-using ElevatorAction.Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
 using System.Text;
 using Constants = ElevatorAction.Application.Constants;
@@ -22,7 +20,6 @@ namespace ElevatorAction.ConsoleUI
         private readonly IOutputManager _outputManager;
         private List<Elevator> elevators = new(); // Used for storing elevators
         private List<Floor> floors = new(); // Building block floor configuration
-        bool quickStart = false;
         private bool _isRunning;
 
         public List<Elevator> Elevators { get => elevators; set => elevators = value; }
@@ -47,6 +44,7 @@ namespace ElevatorAction.ConsoleUI
             }
             _isRunning = true;
             List<IElevatorService> services = new();
+
             // Start the application
             foreach (Elevator elevator in Elevators)
             {
@@ -88,7 +86,7 @@ namespace ElevatorAction.ConsoleUI
                     {
                         case ApplicationOptions.Run:
                             // We will attempt to Run the simulator
-                            TempSetup(); // TODO: REMOVE!!
+                            //TempSetup(); // TODO: REMOVE!!
 
                             if (!floors.Any())
                             {
@@ -96,7 +94,7 @@ namespace ElevatorAction.ConsoleUI
                             }
                             if (!Elevators.Any())
                             {
-                                Elevators.Add(new Elevator(_maximumCapacity));
+                                AddElevator();
                             }
                             break;
                         case ApplicationOptions.Add:
@@ -206,11 +204,11 @@ namespace ElevatorAction.ConsoleUI
             int floorCount, groundFloor;
 
             // Amount of floors
-            floorCount = _inputManager.NumberInput(Constants.Simulator.Levels);
+            floorCount = _inputManager.GreaterThanNumberInput(Constants.Simulator.Levels, 2); // Lowest is two levels
             Console.Write($"{Constants.Messages.ThankYou} ");
 
             // Which level is the ground floor?
-            groundFloor = _inputManager.NumberInput(Constants.Simulator.GroundLevel);
+            groundFloor = _inputManager.BetweenNumberInput(Constants.Simulator.GroundLevel, 0, floorCount);
 
             // Work out floor levels
             FloorHelper.Iterate(groundFloor, floorCount, AddFloor);
@@ -255,22 +253,20 @@ namespace ElevatorAction.ConsoleUI
                             }
                             Console.Write(floors[i].Number);
                         }
+
+                        var floorNumber = _inputManager.BetweenNumberInput(string.Empty, floors.MinBy(x => x.Number)!.Number, floors.MaxBy(x => x.Number)!.Number);
+                        elevator.AddFloor(floors[floorNumber]);
                     }
                     else
                     {
                         AddFloor(floors.Count + 1);
+                        elevator.AddFloor(floors.Last());
                     }
                 }
             }
             else
             {
-                // TODO: Add this logic
-                //// Amount of floors
-                //do
-                //{
-                //    Console.WriteLine("Would you like to add the same floors to this elevator?");
-                //}
-                //while (!int.TryParse(Console.ReadLine(), out floorCount));
+                AddFloors();
             }
         }
 
@@ -303,12 +299,13 @@ namespace ElevatorAction.ConsoleUI
         {
             while (_isRunning)
             {
+                int lowest = floors.MinBy(x => x.Number)!.Number, highest = floors.MaxBy(x => x.Number)!.Number;
                 // Print out floor config
-                Console.WriteLine(string.Format(Constants.Simulator.Selection, floors.Count, floors.MinBy(x => x.Number)?.Number, floors.MaxBy(x => x.Number)?.Number));
+                Console.WriteLine(string.Format(Constants.Simulator.Selection, floors.Count, lowest, highest));
 
-                int currentFloor = quickStart ? 2 : _inputManager.NumberInput(Constants.Simulator.RequestElevator);
+                int currentFloor = _inputManager.BetweenNumberInput(Constants.Simulator.RequestElevator, lowest, highest);
 
-                int people = quickStart ? 7 : _inputManager.NumberInput(Constants.Simulator.PeopleCount);
+                int people = _inputManager.BetweenNumberInput(Constants.Simulator.PeopleCount, 1, _maximumCapacity);
 
                 // Just by this information, we should be able to tell which directions are available
                 var directions = _controller.GetAvailableDirections(currentFloor);
@@ -316,7 +313,7 @@ namespace ElevatorAction.ConsoleUI
                 // Can go up or down, so choose
                 if (directions.HasFlag(ElevatorDirection.Up | ElevatorDirection.Down))
                 {
-                    directions = quickStart ? ElevatorDirection.Up : _inputManager.DirectionInput(Constants.Input.Direction);
+                    directions = _inputManager.DirectionInput(Constants.Input.Direction);
                 }
 
                 await _controller.RequestElevatorAsync(new Request(currentFloor, people, directions));
@@ -328,7 +325,7 @@ namespace ElevatorAction.ConsoleUI
         /// <summary>
         /// Easy setup. NB!! REMOVE before prod
         /// </summary>
-        void TempSetup()
+        void TempSetupX()
         {
             for (int i = 0; i < 3; i++)
             {

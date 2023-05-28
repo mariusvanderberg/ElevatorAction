@@ -2,7 +2,6 @@
 using ElevatorAction.Application.Interfaces;
 using ElevatorAction.Domain.Entities;
 using ElevatorAction.Domain.Enums;
-using ElevatorAction.Domain.Interfaces;
 using System.Drawing;
 
 namespace ElevatorAction.Application
@@ -102,7 +101,7 @@ namespace ElevatorAction.Application
         {
             if (!HasFloor(request.Floor))
             {
-                throw new ArgumentOutOfRangeException(nameof(request.Floor), Constants.Operation.InvalidFloor);
+                throw new ArgumentOutOfRangeException(nameof(request), Constants.Operation.InvalidFloor);
             }
             // Process the request here (e.g., open doors, handle passengers, etc.)
             Console.WriteLine(string.Format(Constants.Operation.ElevatorOnRoute, _elevator.Id, request.Floor, request.People));
@@ -178,11 +177,11 @@ namespace ElevatorAction.Application
             _elevator.Direction = direction;
 
             Console.WriteLine(string.Format(Constants.Operation.Movement, direction.ToString().ToLower()));
-            // Print current floor
-            Console.Write(string.Format(Constants.Formatting.ElevatorMovingFormat, _elevator.CurrentPersons, _elevator.CurrentFloor));
+
+            int floor = _elevator.CurrentFloor;
 
             // Simulating elevator movement
-            while (_elevator.CurrentFloor != floorNumber)
+            while (floor != floorNumber)
             {
                 // Check if cancellation has been requested
                 if (stoppingToken.IsCancellationRequested)
@@ -195,18 +194,21 @@ namespace ElevatorAction.Application
 
                 // Perform elevator movement logic, e.g., update current floor, move up or down, etc.
                 if (direction == ElevatorDirection.Up)
-                    _elevator.CurrentFloor++;
+                    floor++;
                 else
-                    _elevator.CurrentFloor--;
+                    floor--;
+
+                // Some floors are not supported by the elevator, so update when the correct floor has been reached
+                _elevator.CurrentFloor = floor;
 
                 // Simulate delay between floors. This is a Maglev elevator, super fast!
                 await _asyncDelayer.Delay(500, stoppingToken);
 
                 // Clears input
-                Console.Write("\r" + new string(' ', _elevator.CurrentFloor.ToString().Length) + "\r");
+                Console.Write("\r" + new string(' ', floor.ToString().Length) + "\r");
 
                 // Print current floor
-                Console.Write(string.Format(Constants.Formatting.ElevatorMovingFormat, _elevator.CurrentPersons, _elevator.CurrentFloor));
+                Console.Write(string.Format(Constants.Formatting.ElevatorMovingFormat, _elevator.CurrentPersons, floor));
             }
             Console.WriteLine();
 

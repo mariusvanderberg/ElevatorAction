@@ -2,7 +2,6 @@
 using ElevatorAction.Application.Interfaces;
 using ElevatorAction.Domain.Entities;
 using ElevatorAction.Domain.Enums;
-using ElevatorAction.Domain.Interfaces;
 
 namespace ElevatorAction.Application
 {
@@ -71,8 +70,10 @@ namespace ElevatorAction.Application
         /// <inheritdoc/>
         public async Task<bool> ProcessElevatorRequestsAsync()
         {
+            int backOffDelay = 1000; // To ensure we don't simulate an endless loop
             while (_requestQueue.Count > 0)
             {
+                backOffDelay *= 2;
                 Request request = _requestQueue.Dequeue();
 
                 IElevatorService? elevatorService = GetAvailableElevator(request);
@@ -85,6 +86,7 @@ namespace ElevatorAction.Application
                 {
                     await EnqueueRequestAsync(request.Floor, request.People, request.Direction);
                 }
+                await _asyncDelayer.Delay(backOffDelay, default);
             }
 
             // Default is true, failure results in exception
@@ -123,8 +125,9 @@ namespace ElevatorAction.Application
                 Delegate[] eventHandlers = RequestReceived.GetInvocationList();
                 List<Task> handlerTasks = new(eventHandlers.Length);
 
-                foreach (EventHandler<RequestEventArgs> handler in eventHandlers)
+                for (int i = 0; i < eventHandlers.Length; i++)
                 {
+                    EventHandler<RequestEventArgs> handler = (EventHandler<RequestEventArgs>)eventHandlers[i];
                     Task task = Task.Run(() => handler.Invoke(this, e));
                     handlerTasks.Add(task);
                 }
@@ -184,6 +187,7 @@ namespace ElevatorAction.Application
             // Get all elevators. Exclude out of order elevators
             var eligibleElevators = _elevatorServices.Where(x =>
                 x.GetElevatorState() != ElevatorState.OutOfOrder &&
+                x.HasFloor(request.Floor) && // Exclude floors this elevator does not serve
                 !x.CapacityReached() && x.HasSpaceFor(request.People)).ToList();
 
             // First, is there a moving elevator, close by, that has enough capacity

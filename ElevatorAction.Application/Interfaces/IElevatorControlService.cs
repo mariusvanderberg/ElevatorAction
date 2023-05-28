@@ -2,7 +2,7 @@
 using ElevatorAction.Domain.Entities;
 using ElevatorAction.Domain.Enums;
 
-namespace ElevatorAction.Domain.Interfaces
+namespace ElevatorAction.Application.Interfaces
 {
     public interface IElevatorControlService
     {

@@ -18,7 +18,9 @@ public static class Constants
 
     public static class Formatting
     {
+        public const string BetweenFormat = "{0} (between {1} and {2}) ";
         public const string ElevatorMovingFormat = "Elevator moving with {0} people. Current floor: {1}";
+        public const string GreaterThanEqualsFormat = "{0} (>= {1}) ";
         public const string OptionsFormat = "{0}) {1} - {2}";
     }
     public static class Input
@@ -50,7 +52,7 @@ public static class Constants
         public const string ElevatorReady = "Elevator ready and loaded. Which floor would you like to go to?";
         public const string EmergencyStop = "Emergency stop requested. Stopping elevator.";
         public const string Error = "Please provide a number";
-        public const string InvalidFloor = "Invalid floor selected.";
+        public const string InvalidFloor = "Invalid floor requested.";
         public const string Movement = "Elevator going {0}";
         public const string NoElevators = "We currently have no elevators that take {0} people. We will send more elevators, please wait.";
     }

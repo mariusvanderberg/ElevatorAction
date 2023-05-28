@@ -1,7 +1,7 @@
 ﻿using ElevatorAction.Application;
+using ElevatorAction.Application.Interfaces;
 using ElevatorAction.Domain.Common;
 using ElevatorAction.Domain.Enums;
-using ElevatorAction.Domain.Interfaces;
 using Constants = ElevatorAction.Application.Constants;
 
 namespace ElevatorAction.ConsoleUI.Helpers
@@ -33,6 +33,34 @@ namespace ElevatorAction.ConsoleUI.Helpers
             while (!int.TryParse(input, out val))
             {
                 input = ReadLine.Read(message);
+            }
+
+            return val;
+        }
+
+        /// <inheritdoc/>
+        public int GreaterThanNumberInput(string message, int lowest = 0)
+        {
+            int val = NumberInput(string.Format(Constants.Formatting.GreaterThanEqualsFormat, message, lowest));
+
+            while (val < lowest)
+            {
+                Console.WriteLine(Constants.Messages.Error);
+                val = NumberInput(string.Format(Constants.Formatting.GreaterThanEqualsFormat, message, lowest));
+            }
+
+            return val;
+        }
+
+        /// <inheritdoc/>
+        public int BetweenNumberInput(string message, int lowest = 0, int highest = 0)
+        {
+            int val = NumberInput(string.Format(Constants.Formatting.BetweenFormat, message, lowest, highest));
+
+            while (val < lowest || val > highest)
+            {
+                Console.WriteLine(Constants.Messages.Error);
+                val = NumberInput(string.Format(Constants.Formatting.BetweenFormat, message, lowest, highest));
             }
 
             return val;

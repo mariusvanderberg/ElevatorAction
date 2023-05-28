@@ -13,7 +13,7 @@ public static class FloorHelper
     /// Wrap this in a delagte to add to the iteration</param>
     public static void Iterate(int ground, int count, Action<int> action)
     {
-        for (var i = ground * -1 + 1; i < count - ground + 1; i++)
+        for (var i = ground == 0 ? ground : ground * -1 + 1; i < (ground == 0 ? count : count - ground + 1); i++)
         {
             action(i);
         }

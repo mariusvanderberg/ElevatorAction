@@ -1,8 +1,9 @@
 ﻿using ElevatorAction.ConsoleUI.Helpers;
 using ElevatorAction.Domain.Entities;
+using ElevatorAction.Tests.Setup;
 using static ElevatorAction.Application.Constants;
 
-namespace ElevatorAction.Tests.Elevators
+namespace ElevatorAction.Tests
 {
     public class FloorTests : BaseTest
     {
@@ -28,7 +29,7 @@ namespace ElevatorAction.Tests.Elevators
         }
 
         [Test]
-        [TestCase(1)]
+        [TestCase(2)]
         [TestCase(10)]
         [TestCase(17)]
         [TestCase(100)]
@@ -49,8 +50,8 @@ namespace ElevatorAction.Tests.Elevators
 
             // Assert
             Assert.That(floors.Count, Is.EqualTo(floorCount));
-            Assert.That(floors.MinBy(x => x.Number)?.Number, Is.EqualTo(groundFloor * -1 + 1));
-            Assert.That(floors.MaxBy(x => x.Number)?.Number, Is.EqualTo(floorCount - groundFloor));
+            Assert.That(floors.MinBy(x => x.Number)?.Number, Is.EqualTo(groundFloor == 0 ? groundFloor : groundFloor * -1 + 1));
+            Assert.That(floors.MaxBy(x => x.Number)?.Number, Is.EqualTo(groundFloor == 0 ? floorCount - 1 : floorCount - groundFloor));
         }
     }
 }

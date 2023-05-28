@@ -1,4 +1,4 @@
-﻿namespace ElevatorAction.ConsoleUI.Interfaces
+﻿namespace ElevatorAction.Application.Interfaces
 {
     public interface IOutputManager
     {

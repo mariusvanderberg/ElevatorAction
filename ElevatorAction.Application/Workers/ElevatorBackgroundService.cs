@@ -1,4 +1,4 @@
-﻿using ElevatorAction.Domain.Interfaces;
+﻿using ElevatorAction.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 

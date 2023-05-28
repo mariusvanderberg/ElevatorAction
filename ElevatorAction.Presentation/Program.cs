@@ -4,10 +4,11 @@ using ElevatorAction.Application.Interfaces;
 using ElevatorAction.Application.Workers;
 using ElevatorAction.ConsoleUI;
 using ElevatorAction.ConsoleUI.Helpers;
-using ElevatorAction.ConsoleUI.Interfaces;
-using ElevatorAction.Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+
+// Subscribe to the UnhandledException event
+AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionHandler;
 
 // Create an instance of IConfigurationBuilder
 var configBuilder = new ConfigurationBuilder()
@@ -64,4 +65,23 @@ static IContainer BuildContainer(IConfiguration configuration)
     var container = builder.Build();
 
     return container;
+}
+
+static void UnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs e)
+{
+    // Get the exception object
+    Exception? exception = e?.ExceptionObject as Exception;
+
+    if (!(e?.ExceptionObject is { }))
+    {
+        return;
+    }
+
+    // Handle the exception
+    // You can format and log the error here
+    Console.WriteLine("An unhandled exception occurred:");
+    Console.WriteLine(exception?.ToString());
+
+    // Optionally, you can exit the application or perform other actions
+    // Environment.Exit(1);
 }

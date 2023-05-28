@@ -1,11 +1,10 @@
 ﻿using Autofac;
 using ElevatorAction.Application;
 using ElevatorAction.Application.Interfaces;
-using ElevatorAction.Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Moq;
 
-namespace ElevatorAction.Tests
+namespace ElevatorAction.Tests.Setup
 {
     [SetUpFixture]
     public class TestSetup

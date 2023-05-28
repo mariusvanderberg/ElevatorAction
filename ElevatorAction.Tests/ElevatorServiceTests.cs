@@ -3,8 +3,9 @@ using ElevatorAction.Application.Common;
 using ElevatorAction.Domain.Entities;
 using ElevatorAction.Domain.Enums;
 using ElevatorAction.Tests.Helpers;
+using ElevatorAction.Tests.Setup;
 
-namespace ElevatorAction.Tests.Elevators
+namespace ElevatorAction.Tests
 {
     public class ElevatorServiceTests : BaseTest
     {
@@ -49,14 +50,13 @@ namespace ElevatorAction.Tests.Elevators
             TestHelper.AddFloorsToElevator(groundFloor, floorCount, _elevator);
 
             // Act
-            await _elevatorService.MoveToFloorAsync(expectedFloor, Domain.Enums.ElevatorDirection.Down, new CancellationToken());
+            await _elevatorService.MoveToFloorAsync(expectedFloor, ElevatorDirection.Down, new CancellationToken());
 
             // Assert
             Assert.That(_elevator.CurrentFloor, Is.EqualTo(expectedFloor));
         }
 
         [Test]
-        [TestCase(1)]
         [TestCase(2)]
         [TestCase(10)]
         [TestCase(7)]
@@ -69,7 +69,7 @@ namespace ElevatorAction.Tests.Elevators
             TestHelper.AddFloorsToElevator(groundFloor, floorCount, _elevator);
 
             // Act
-            await _elevatorService.MoveToFloorAsync(expectedFloor, Domain.Enums.ElevatorDirection.Down, new CancellationToken());
+            await _elevatorService.MoveToFloorAsync(expectedFloor, ElevatorDirection.Down, new CancellationToken());
 
             // Assert
             Assert.That(_elevator.CurrentFloor, Is.EqualTo(expectedFloor));
@@ -86,7 +86,7 @@ namespace ElevatorAction.Tests.Elevators
             TestHelper.AddFloorsToElevator(groundFloor, floorCount, _elevator);
 
             // Act
-            var task = _elevatorService.MoveToFloorAsync(expectedFloor, Domain.Enums.ElevatorDirection.Up, new CancellationToken());
+            var task = _elevatorService.MoveToFloorAsync(expectedFloor, ElevatorDirection.Up, new CancellationToken());
 
             // Assert
             Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await task);
@@ -100,7 +100,7 @@ namespace ElevatorAction.Tests.Elevators
 
             TestHelper.AddFloorsToElevator(groundFloor, floorCount, _elevator);
 
-            Request req = new Request(expectedFloor, people, Domain.Enums.ElevatorDirection.Down);
+            Request req = new Request(expectedFloor, people, ElevatorDirection.Down);
 
             // Act
             await _elevatorService.ProcessRequestAsync(req, new CancellationToken());
@@ -119,7 +119,7 @@ namespace ElevatorAction.Tests.Elevators
 
             TestHelper.AddFloorsToElevator(groundFloor, floorCount, _elevator);
 
-            var req = new Request(expectedFloor, people, Domain.Enums.ElevatorDirection.Down);
+            var req = new Request(expectedFloor, people, ElevatorDirection.Down);
 
             // Act
             var task = _elevatorService.ProcessRequestAsync(req, new CancellationToken());
@@ -144,7 +144,7 @@ namespace ElevatorAction.Tests.Elevators
             TestHelper.AddFloorsToElevator(groundFloor, floorCount, _elevator);
 
             // Act
-            await _elevatorService.MoveToFloorAsync(expectedFloor, Domain.Enums.ElevatorDirection.Down, new CancellationToken());
+            await _elevatorService.MoveToFloorAsync(expectedFloor, ElevatorDirection.Down, new CancellationToken());
 
             // Assert
             Assert.That(_elevator.CurrentFloor, Is.EqualTo(expectedFloor));

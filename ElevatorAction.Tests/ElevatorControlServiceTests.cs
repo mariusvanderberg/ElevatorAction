@@ -1,13 +1,14 @@
 ﻿using ElevatorAction.Application;
 using ElevatorAction.Application.Common;
+using ElevatorAction.Application.Interfaces;
 using ElevatorAction.ConsoleUI.Helpers;
 using ElevatorAction.Domain.Entities;
 using ElevatorAction.Domain.Enums;
-using ElevatorAction.Domain.Interfaces;
+using ElevatorAction.Tests.Setup;
 using Moq;
 using static ElevatorAction.Application.Constants;
 
-namespace ElevatorAction.Tests.Elevators
+namespace ElevatorAction.Tests
 {
     public class ElevatorControlServiceTests : BaseTest
     {
