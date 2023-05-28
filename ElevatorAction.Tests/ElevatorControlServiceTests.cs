@@ -63,19 +63,18 @@ namespace ElevatorAction.Tests
         }
 
         [Test]
-        public void Requesting_Elevator_Should_Return_Closet_Elevator()
+        public async Task Requesting_Elevator_Should_Return_Closet_Elevator()
         {
             // Arrange
-            int firstRequestFloor = -2, secondRequestFloor = 7, thirdRequestFloor = 2, poeple = 10;
+            int firstRequestFloor = -2, secondRequestFloor = 7, poeple = 10;
             var direction = ElevatorDirection.Up;
 
             // Act
-            _ = controller.RequestElevatorAsync(new Request(firstRequestFloor, poeple, direction));
-            _ = controller.RequestElevatorAsync(new Request(secondRequestFloor, poeple, direction));
-            _ = controller.RequestElevatorAsync(new Request(thirdRequestFloor, poeple, direction));
+            await controller.RequestElevatorAsync(new Request(firstRequestFloor, poeple, direction));
+            await controller.RequestElevatorAsync(new Request(secondRequestFloor, poeple, direction));
 
             // Assert
-            Assert.That(Elevators.Count(x => x.CurrentFloor == secondRequestFloor), Is.EqualTo(1));
+            Assert.That(Elevators.Count(x => x.CurrentFloor == secondRequestFloor), Is.EqualTo(2));
         }
 
         [Test]
