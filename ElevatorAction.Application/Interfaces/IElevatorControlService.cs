@@ -18,8 +18,9 @@ namespace ElevatorAction.Domain.Interfaces
         void Initialize(List<IElevatorService> elevatorServices, List<Floor> floors);
 
         /// <summary>
-        /// This needs to be hooked up to a poller
+        /// Processes requests from the queue
         /// </summary>
+        /// <remarks>This needs to be hooked up to a poller</remarks>
         /// <returns>bool indicating success</returns>
         Task<bool> ProcessElevatorRequestsAsync();
 

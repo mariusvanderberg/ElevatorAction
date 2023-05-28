@@ -1,5 +1,6 @@
 ﻿using ElevatorAction.Application;
 using ElevatorAction.Application.Common;
+using ElevatorAction.Application.Interfaces;
 using ElevatorAction.ConsoleUI.Extensions;
 using ElevatorAction.ConsoleUI.Helpers;
 using ElevatorAction.ConsoleUI.Interfaces;
@@ -15,6 +16,7 @@ namespace ElevatorAction.ConsoleUI
     public class Simulator : ISimulator
     {
         private readonly IElevatorControlService _controller;
+        private readonly IAsyncDelayer _asyncDelayer;
         private readonly IInputManager _inputManager;
         private readonly int _maximumCapacity;
         private readonly IOutputManager _outputManager;
@@ -25,12 +27,13 @@ namespace ElevatorAction.ConsoleUI
 
         public List<Elevator> Elevators { get => elevators; set => elevators = value; }
 
-        public Simulator(IInputManager inputManager, IOutputManager outputManager, IElevatorControlService controller, IConfiguration configuration)
+        public Simulator(IInputManager inputManager, IOutputManager outputManager, IElevatorControlService controller, IConfiguration configuration, IAsyncDelayer asyncDelayer)
         {
             _inputManager = inputManager ?? throw new ArgumentNullException(nameof(inputManager));
             _outputManager = outputManager ?? throw new ArgumentNullException(nameof(outputManager));
             _controller = controller;
             _maximumCapacity = configuration.GetValue<int>("Elevator:MaximumCapacity");
+            _asyncDelayer = asyncDelayer;
         }
 
         /// <inheritdoc/>
@@ -39,14 +42,15 @@ namespace ElevatorAction.ConsoleUI
             // Validate elevators
             if (Elevators.Count == 0)
             {
-                return _isRunning;
+                _isRunning = false;
+                return false;
             }
             _isRunning = true;
-            List<IElevatorService> services = new List<IElevatorService>();
+            List<IElevatorService> services = new();
             // Start the application
             foreach (Elevator elevator in Elevators)
             {
-                services.Add(new ElevatorService(elevator, new AsyncDelayer()));
+                services.Add(new ElevatorService(elevator, _asyncDelayer));
             }
 
             // Instantiate main elevator controller service
@@ -273,7 +277,7 @@ namespace ElevatorAction.ConsoleUI
         /// <summary>
         /// Writes application options to output
         /// </summary>
-        private void PrintOptions()
+        private static void PrintOptions()
         {
             foreach (ApplicationOptions opt in Enum.GetValues(typeof(ApplicationOptions)))
             {

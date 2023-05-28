@@ -84,7 +84,7 @@ namespace ElevatorAction.Tests.Elevators
         }
 
         [SetUp]
-        public new void SetUp()
+        public void SetUp()
         {
             _elevator = new Elevator();
         }

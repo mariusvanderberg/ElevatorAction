@@ -1,9 +1,8 @@
 ﻿using ElevatorAction.Application;
 using ElevatorAction.Application.Common;
-using ElevatorAction.ConsoleUI.Helpers;
 using ElevatorAction.Domain.Entities;
 using ElevatorAction.Domain.Enums;
-using static ElevatorAction.Application.Constants;
+using ElevatorAction.Tests.Helpers;
 
 namespace ElevatorAction.Tests.Elevators
 {
@@ -28,6 +27,16 @@ namespace ElevatorAction.Tests.Elevators
         }
 
         [Test]
+        public void Emergency_Stop_Should_Put_Elevator_Out_Of_ServiceAsync()
+        {
+            // Arrange/ Act
+            _elevatorService.MakeEmergencyStop();
+
+            // Assert
+            Assert.That(_elevator.ElevatorState, Is.EqualTo(ElevatorState.OutOfOrder));
+        }
+
+        [Test]
         [TestCase(2)]
         [TestCase(7)]
         [TestCase(10)]
@@ -37,7 +46,7 @@ namespace ElevatorAction.Tests.Elevators
             int groundFloor = floorCount / 2;
             int expectedFloor = groundFloor;
 
-            AddFloorsToElevator(groundFloor, floorCount);
+            TestHelper.AddFloorsToElevator(groundFloor, floorCount, _elevator);
 
             // Act
             await _elevatorService.MoveToFloorAsync(expectedFloor, Domain.Enums.ElevatorDirection.Down, new CancellationToken());
@@ -57,7 +66,7 @@ namespace ElevatorAction.Tests.Elevators
             int groundFloor = floorCount / 2;
             int expectedFloor = groundFloor * -1 + 1;
 
-            AddFloorsToElevator(groundFloor, floorCount);
+            TestHelper.AddFloorsToElevator(groundFloor, floorCount, _elevator);
 
             // Act
             await _elevatorService.MoveToFloorAsync(expectedFloor, Domain.Enums.ElevatorDirection.Down, new CancellationToken());
@@ -74,7 +83,7 @@ namespace ElevatorAction.Tests.Elevators
             // Arrange
             const int floorCount = 5, groundFloor = 2;
 
-            AddFloorsToElevator(groundFloor, floorCount);
+            TestHelper.AddFloorsToElevator(groundFloor, floorCount, _elevator);
 
             // Act
             var task = _elevatorService.MoveToFloorAsync(expectedFloor, Domain.Enums.ElevatorDirection.Up, new CancellationToken());
@@ -89,7 +98,7 @@ namespace ElevatorAction.Tests.Elevators
             // Arrange
             const int floorCount = 5, groundFloor = 2, expectedFloor = 3, people = 10;
 
-            AddFloorsToElevator(groundFloor, floorCount);
+            TestHelper.AddFloorsToElevator(groundFloor, floorCount, _elevator);
 
             Request req = new Request(expectedFloor, people, Domain.Enums.ElevatorDirection.Down);
 
@@ -108,7 +117,7 @@ namespace ElevatorAction.Tests.Elevators
             // Arrange
             const int floorCount = 5, groundFloor = 2, people = 10;
 
-            AddFloorsToElevator(groundFloor, floorCount);
+            TestHelper.AddFloorsToElevator(groundFloor, floorCount, _elevator);
 
             var req = new Request(expectedFloor, people, Domain.Enums.ElevatorDirection.Down);
 
@@ -120,7 +129,7 @@ namespace ElevatorAction.Tests.Elevators
         }
 
         [SetUp]
-        public new void SetUp()
+        public void SetUp()
         {
             _elevator = new Elevator();
             _elevatorService = new ElevatorService(_elevator, TaskDelayMock.Object);
@@ -132,7 +141,7 @@ namespace ElevatorAction.Tests.Elevators
             // Arrange
             const int floorCount = 5, groundFloor = 3, expectedFloor = -2;
 
-            AddFloorsToElevator(groundFloor, floorCount);
+            TestHelper.AddFloorsToElevator(groundFloor, floorCount, _elevator);
 
             // Act
             await _elevatorService.MoveToFloorAsync(expectedFloor, Domain.Enums.ElevatorDirection.Down, new CancellationToken());
@@ -140,22 +149,5 @@ namespace ElevatorAction.Tests.Elevators
             // Assert
             Assert.That(_elevator.CurrentFloor, Is.EqualTo(expectedFloor));
         }
-
-        [Test]
-        public async Task Emergency_Stop_Should_Put_Elevator_Out_Of_ServiceAsync()
-        {
-            // Arrange/ Act
-            _elevatorService.MakeEmergencyStop();
-
-            // Assert
-            Assert.That(_elevator.ElevatorState, Is.EqualTo(ElevatorState.OutOfOrder));
-        }
-
-        private void AddFloorsToElevator(int groundFloor, int floorCount) => FloorHelper.Iterate(groundFloor, floorCount, i => _elevator.AddFloor(new Floor
-        {
-            FriendlyName = i == 0 ? Simulator.GroundLevelName : i.ToString(),
-            Name = i.ToString(),
-            Number = i
-        }));
     }
 }

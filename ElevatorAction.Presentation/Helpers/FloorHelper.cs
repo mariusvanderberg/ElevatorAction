@@ -4,6 +4,8 @@ public static class FloorHelper
 {
     /// <summary>
     /// Takes in the ground floor, floour count, and works out the levels
+    /// by correct iteration. It provides a <see cref="Action"/> to use as
+    /// desired
     /// </summary>
     /// <param name="ground">Ground floor</param>
     /// <param name="count">Floor count, i.e. 10 floors</param>

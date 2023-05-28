@@ -1,4 +1,5 @@
 ﻿using ElevatorAction.Application.Common;
+using ElevatorAction.Application.Interfaces;
 using ElevatorAction.Domain.Entities;
 using ElevatorAction.Domain.Enums;
 using ElevatorAction.Domain.Interfaces;
@@ -11,14 +12,15 @@ namespace ElevatorAction.Application
     /// </summary>
     public class ElevatorControlService : IElevatorControlService
     {
+        private readonly IAsyncDelayer _asyncDelayer;
         private readonly IInputManager _inputManager;
         private List<IElevatorService> _elevatorServices = new();
         private List<Floor> _floors = new();
-        private Queue<Request> _requestQueue = new();
         private bool _isInitialised = false;
-
-        public ElevatorControlService(IInputManager inputManager)
+        private Queue<Request> _requestQueue = new();
+        public ElevatorControlService(IAsyncDelayer asyncDelayer, IInputManager inputManager)
         {
+            _asyncDelayer = asyncDelayer;
             _inputManager = inputManager;
         }
 
@@ -97,14 +99,13 @@ namespace ElevatorAction.Application
             if (elevatorService is not null)
             {
                 await MoveElevatorAsync(elevatorService, request);
-
             }
             else
             {
                 // If there are no elevators, then we will have to queue one
                 if (await EnqueueRequestAsync(request.Floor, request.People, request.Direction))
                 {
-                    await Task.Delay(2000);
+                    await _asyncDelayer.Delay(2000, default);
                     await ProcessElevatorRequestsAsync(); // Take it off the queue
                 }
             }
@@ -219,7 +220,7 @@ namespace ElevatorAction.Application
         private async Task<bool> MoveElevatorAsync(IElevatorService elevatorService, Request request)
         {
             // Create a cancellation token source
-            CancellationTokenSource cts = new CancellationTokenSource();
+            var cts = new CancellationTokenSource();
 
             // This handles the elevator itself, moving and then opening doors
             await elevatorService.ProcessRequestAsync(request, cts.Token);
