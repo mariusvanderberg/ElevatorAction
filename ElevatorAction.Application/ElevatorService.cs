@@ -9,9 +9,8 @@ namespace ElevatorAction.Application
 {
     public class ElevatorService : IElevatorService
     {
-        private readonly Elevator _elevator;
         private readonly IAsyncDelayer _asyncDelayer;
-
+        private readonly Elevator _elevator;
         public ElevatorService(Elevator elevator, IAsyncDelayer asyncDelayer)
         {
             _elevator = elevator;
@@ -52,6 +51,12 @@ namespace ElevatorAction.Application
         public int GetNumberOfPeople()
         {
             return _elevator.CurrentPersons;
+        }
+
+        /// <inheritdoc/>
+        public bool HasFloor(int floorNumber)
+        {
+            return _elevator.GetFloors().Any(x => x.Number == floorNumber);
         }
 
         /// <inheritdoc/>
@@ -119,6 +124,19 @@ namespace ElevatorAction.Application
         }
 
         /// <summary>
+        /// Calculate actual direction of elevator based on the current floor
+        /// </summary>
+        /// <param name="destinationFloor">Requested floor</param>
+        /// <returns><see cref="ElevatorDirection"/></returns>
+        private ElevatorDirection DetermineDirection(int destinationFloor)
+        {
+            if (_elevator.CurrentFloor > destinationFloor)
+                return ElevatorDirection.Down;
+
+            return ElevatorDirection.Up;
+        }
+
+        /// <summary>
         /// Simulates elevator doors closing
         /// </summary>
         /// <param name="stoppingToken"><see cref="CancellationToken"/></param>
@@ -147,20 +165,6 @@ namespace ElevatorAction.Application
 
             return true;
         }
-
-        /// <summary>
-        /// Calculate actual direction of elevator based on the current floor
-        /// </summary>
-        /// <param name="destinationFloor">Requested floor</param>
-        /// <returns><see cref="ElevatorDirection"/></returns>
-        private ElevatorDirection DetermineDirection(int destinationFloor)
-        {
-            if (_elevator.CurrentFloor > destinationFloor)
-                return ElevatorDirection.Down;
-
-            return ElevatorDirection.Up;
-        }
-
         /// <summary>
         /// This will simulate and actual elevator moving. We can enhance it by animating it
         /// </summary>
@@ -207,12 +211,6 @@ namespace ElevatorAction.Application
             Console.WriteLine();
 
             return true;
-        }
-
-        /// <inheritdoc/>
-        public bool HasFloor(int floorNumber)
-        {
-            return _elevator.GetFloors().Any(x => x.Number == floorNumber);
         }
     }
 }

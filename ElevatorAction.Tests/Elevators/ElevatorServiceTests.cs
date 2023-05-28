@@ -2,6 +2,7 @@
 using ElevatorAction.Application.Common;
 using ElevatorAction.ConsoleUI.Helpers;
 using ElevatorAction.Domain.Entities;
+using ElevatorAction.Domain.Enums;
 using static ElevatorAction.Application.Constants;
 
 namespace ElevatorAction.Tests.Elevators
@@ -17,7 +18,7 @@ namespace ElevatorAction.Tests.Elevators
         [TestCase(0, 10, true)]
         [TestCase(10, 10, false)]
         [TestCase(7, 7, false)]
-        public void Elevator_With_Capacity_Should_Return_True(int currentPeople, int additionalPeople, bool expectedOutcome)
+        public void Elevator_With_Enough_Capacity_Should_Return_True(int currentPeople, int additionalPeople, bool expectedOutcome)
         {
             // Arrange / Act
             _elevator.CurrentPersons = currentPeople;
@@ -66,10 +67,12 @@ namespace ElevatorAction.Tests.Elevators
         }
 
         [Test]
-        public void Moving_Elevator_To_Wrong_Floor_Should_Throw()
+        [TestCase(-10)]
+        [TestCase(10)]
+        public void Moving_Elevator_To_Wrong_Floor_Should_Throw(int expectedFloor)
         {
             // Arrange
-            const int floorCount = 5, groundFloor = 2, expectedFloor = 10;
+            const int floorCount = 5, groundFloor = 2;
 
             AddFloorsToElevator(groundFloor, floorCount);
 
@@ -81,7 +84,7 @@ namespace ElevatorAction.Tests.Elevators
         }
 
         [Test]
-        public async Task Requesting_Elevator_Should_Send_Elevator_To_FloorAsync()
+        public async Task Requesting_Elevator_Should_Send_Elevator_To_Floor_SuccessfullyAsync()
         {
             // Arrange
             const int floorCount = 5, groundFloor = 2, expectedFloor = 3, people = 10;
@@ -98,10 +101,12 @@ namespace ElevatorAction.Tests.Elevators
         }
 
         [Test]
-        public void Requesting_Elevator_To_Wrong_Floor_Should_Throw()
+        [TestCase(-10)]
+        [TestCase(10)]
+        public void Requesting_Elevator_To_Wrong_Floor_Should_Throw(int expectedFloor)
         {
             // Arrange
-            const int floorCount = 5, groundFloor = 2, expectedFloor = 10, people = 10;
+            const int floorCount = 5, groundFloor = 2, people = 10;
 
             AddFloorsToElevator(groundFloor, floorCount);
 
@@ -120,6 +125,7 @@ namespace ElevatorAction.Tests.Elevators
             _elevator = new Elevator();
             _elevatorService = new ElevatorService(_elevator, TaskDelayMock.Object);
         }
+
         [Test]
         public async Task Should_Be_Able_To_Access_Bewlow_Ground_LevelsAsync()
         {
@@ -133,6 +139,16 @@ namespace ElevatorAction.Tests.Elevators
 
             // Assert
             Assert.That(_elevator.CurrentFloor, Is.EqualTo(expectedFloor));
+        }
+
+        [Test]
+        public async Task Emergency_Stop_Should_Put_Elevator_Out_Of_ServiceAsync()
+        {
+            // Arrange/ Act
+            _elevatorService.MakeEmergencyStop();
+
+            // Assert
+            Assert.That(_elevator.ElevatorState, Is.EqualTo(ElevatorState.OutOfOrder));
         }
 
         private void AddFloorsToElevator(int groundFloor, int floorCount) => FloorHelper.Iterate(groundFloor, floorCount, i => _elevator.AddFloor(new Floor
